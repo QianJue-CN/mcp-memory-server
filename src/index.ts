@@ -5,11 +5,9 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-  Tool,
 } from '@modelcontextprotocol/sdk/types.js';
 import { MemoryManager } from './memory/MemoryManager.js';
 import { MemoryTools } from './tools/MemoryTools.js';
-import { z } from 'zod';
 
 class MemoryMCPServer {
   private server: Server;
@@ -29,11 +27,15 @@ class MemoryMCPServer {
       }
     );
 
+    // 从环境变量读取配置
+    const storagePath = process.env.MCP_MEMORY_STORAGE_PATH;
+
     // 初始化记忆管理器
-    this.memoryManager = new MemoryManager();
+    this.memoryManager = new MemoryManager(storagePath);
     this.memoryTools = new MemoryTools(this.memoryManager);
 
     this.setupHandlers();
+    this.initializeEmbeddingFromEnv();
   }
 
   private setupHandlers(): void {
@@ -74,6 +76,46 @@ class MemoryMCPServer {
         };
       }
     });
+  }
+
+  /**
+   * 从环境变量初始化嵌入配置
+   */
+  private async initializeEmbeddingFromEnv(): Promise<void> {
+    const provider = process.env.MCP_EMBEDDING_PROVIDER;
+    const apiKey = process.env.MCP_EMBEDDING_API_KEY;
+
+    if (provider && apiKey) {
+      try {
+        const config: any = {
+          provider,
+          apiKey,
+        };
+
+        // 可选配置
+        if (process.env.MCP_EMBEDDING_MODEL) {
+          config.model = process.env.MCP_EMBEDDING_MODEL;
+        }
+        if (process.env.MCP_EMBEDDING_BASE_URL) {
+          config.baseUrl = process.env.MCP_EMBEDDING_BASE_URL;
+        }
+        if (process.env.MCP_EMBEDDING_DIMENSIONS) {
+          config.dimensions = parseInt(process.env.MCP_EMBEDDING_DIMENSIONS);
+        }
+        if (process.env.MCP_EMBEDDING_TIMEOUT) {
+          config.timeout = parseInt(process.env.MCP_EMBEDDING_TIMEOUT);
+        }
+        if (process.env.MCP_EMBEDDING_MAX_RETRIES) {
+          config.maxRetries = parseInt(process.env.MCP_EMBEDDING_MAX_RETRIES);
+        }
+
+        // 配置嵌入提供商
+        await this.memoryManager.configureEmbedding(config);
+        console.error(`Embedding provider ${provider} configured successfully`);
+      } catch (error) {
+        console.error('Failed to configure embedding from environment variables:', error);
+      }
+    }
   }
 
   async start(): Promise<void> {
