@@ -2,10 +2,7 @@
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js';
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { MemoryManager } from './memory/MemoryManager.js';
 import { MemoryTools } from './tools/MemoryTools.js';
 
@@ -66,10 +63,14 @@ class MemoryMCPServer {
           content: [
             {
               type: 'text',
-              text: JSON.stringify({
-                success: false,
-                error: errorMessage,
-              }, null, 2),
+              text: JSON.stringify(
+                {
+                  success: false,
+                  error: errorMessage,
+                },
+                null,
+                2
+              ),
             },
           ],
           isError: true,
@@ -111,17 +112,13 @@ class MemoryMCPServer {
 
         // 配置嵌入提供商
         await this.memoryManager.configureEmbedding(config);
-        console.error(`Embedding provider ${provider} configured successfully`);
-      } catch (error) {
-        console.error('Failed to configure embedding from environment variables:', error);
-      }
+      } catch (error) {}
     }
   }
 
   async start(): Promise<void> {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
-    console.error('MCP Memory Server started successfully');
   }
 }
 
@@ -129,6 +126,9 @@ class MemoryMCPServer {
 async function main() {
   const server = new MemoryMCPServer();
   await server.start();
+  setInterval(() => {
+    console.error('Server process is still running...');
+  }, 5000);
 }
 
 // 处理未捕获的异常
@@ -144,7 +144,6 @@ process.on('unhandledRejection', (reason, promise) => {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch((error) => {
-    console.error('Failed to start server:', error);
     process.exit(1);
   });
 }

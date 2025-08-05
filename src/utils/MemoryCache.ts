@@ -51,7 +51,7 @@ export class MemoryCache {
     // 添加新条目
     this.cache.set(id, {
       entry: { ...entry },
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -110,7 +110,7 @@ export class MemoryCache {
       maxSize: this.maxSize,
       hitCount: this.hitCount,
       missCount: this.missCount,
-      hitRate: total > 0 ? this.hitCount / total : 0
+      hitRate: total > 0 ? this.hitCount / total : 0,
     };
   }
 
@@ -125,7 +125,7 @@ export class MemoryCache {
    * 获取所有缓存的记忆条目
    */
   getAllEntries(): MemoryEntry[] {
-    return Array.from(this.cache.values()).map(item => item.entry);
+    return Array.from(this.cache.values()).map((item) => item.entry);
   }
 
   /**

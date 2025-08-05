@@ -29,7 +29,10 @@ export abstract class BaseEmbeddingProvider implements EmbeddingProvider {
         const result = await this.generateEmbedding(text);
         results.push(result);
       } catch (error) {
-        logger.error(`Failed to generate embedding for text: ${text.substring(0, 50)}...`, error as Error);
+        logger.error(
+          `Failed to generate embedding for text: ${text.substring(0, 50)}...`,
+          error as Error
+        );
         throw error;
       }
     }
@@ -45,7 +48,7 @@ export abstract class BaseEmbeddingProvider implements EmbeddingProvider {
       name: this.name,
       model: this.model,
       dimensions: this.dimensions,
-      configured: this.isConfigured()
+      configured: this.isConfigured(),
     };
   }
 
@@ -81,8 +84,10 @@ export abstract class BaseEmbeddingProvider implements EmbeddingProvider {
 
         // 指数退避
         const delay = Math.pow(2, attempt) * 1000;
-        logger.warn(`Embedding API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        logger.warn(
+          `Embedding API call failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${delay}ms...`
+        );
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
@@ -103,7 +108,7 @@ export abstract class BaseEmbeddingProvider implements EmbeddingProvider {
     try {
       const response = await fetch(url, {
         ...options,
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       if (!response.ok) {
@@ -128,12 +133,14 @@ export abstract class BaseEmbeddingProvider implements EmbeddingProvider {
       throw new Error('Embedding cannot be empty');
     }
 
-    if (embedding.some(val => typeof val !== 'number' || !isFinite(val))) {
+    if (embedding.some((val) => typeof val !== 'number' || !isFinite(val))) {
       throw new Error('Embedding must contain only finite numbers');
     }
 
     if (this.dimensions > 0 && embedding.length !== this.dimensions) {
-      throw new Error(`Embedding dimension mismatch: expected ${this.dimensions}, got ${embedding.length}`);
+      throw new Error(
+        `Embedding dimension mismatch: expected ${this.dimensions}, got ${embedding.length}`
+      );
     }
   }
 
@@ -147,7 +154,7 @@ export abstract class BaseEmbeddingProvider implements EmbeddingProvider {
       throw new Error('Cannot normalize zero vector');
     }
 
-    return embedding.map(val => val / magnitude);
+    return embedding.map((val) => val / magnitude);
   }
 }
 

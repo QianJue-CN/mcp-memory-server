@@ -14,7 +14,7 @@ export class GeminiProvider extends BaseEmbeddingProvider {
     super({
       ...config,
       baseUrl: config.baseUrl || GeminiProvider.DEFAULT_BASE_URL,
-      model: config.model || GeminiProvider.DEFAULT_MODEL
+      model: config.model || GeminiProvider.DEFAULT_MODEL,
     });
   }
 
@@ -49,10 +49,7 @@ export class GeminiProvider extends BaseEmbeddingProvider {
 
     return this.withRetry(async () => {
       // 尝试不同的API端点格式
-      const endpoints = [
-        `/v1/embeddings`,
-        `/v1/models/${this.config.model}:embedContent`
-      ];
+      const endpoints = [`/v1/embeddings`, `/v1/models/${this.config.model}:embedContent`];
 
       let response: Response | null = null;
       let lastError: Error | null = null;
@@ -62,16 +59,20 @@ export class GeminiProvider extends BaseEmbeddingProvider {
           const url = `${this.config.baseUrl}${endpoint}`;
 
           // 根据端点选择请求格式
-          const requestBody = endpoint.includes('embedContent') ? {
-            content: {
-              parts: [{
-                text: processedText
-              }]
-            }
-          } : {
-            input: processedText,
-            model: this.config.model
-          };
+          const requestBody = endpoint.includes('embedContent')
+            ? {
+                content: {
+                  parts: [
+                    {
+                      text: processedText,
+                    },
+                  ],
+                },
+              }
+            : {
+                input: processedText,
+                model: this.config.model,
+              };
 
           logger.debug(`Trying Gemini endpoint: ${endpoint}`);
 
@@ -79,9 +80,9 @@ export class GeminiProvider extends BaseEmbeddingProvider {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${this.config.apiKey}`
+              Authorization: `Bearer ${this.config.apiKey}`,
             },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify(requestBody),
           });
 
           // 如果成功，跳出循环
@@ -96,7 +97,7 @@ export class GeminiProvider extends BaseEmbeddingProvider {
         throw lastError || new Error('All endpoints failed');
       }
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.error) {
         throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
@@ -123,7 +124,7 @@ export class GeminiProvider extends BaseEmbeddingProvider {
         embedding: normalizedEmbedding,
         dimensions: embedding.length,
         model: this.config.model,
-        provider: this.name
+        provider: this.name,
       };
     });
   }
@@ -144,7 +145,9 @@ export class GeminiProvider extends BaseEmbeddingProvider {
 
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
-      logger.debug(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(texts.length / batchSize)}`);
+      logger.debug(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(texts.length / batchSize)}`
+      );
 
       const batchResults = await this.processBatch(batch);
       results.push(...batchResults);
@@ -160,28 +163,30 @@ export class GeminiProvider extends BaseEmbeddingProvider {
     return this.withRetry(async () => {
       const url = `${this.config.baseUrl}/v1/models/${this.config.model}:batchEmbedContents`;
 
-      const requests = texts.map(text => ({
+      const requests = texts.map((text) => ({
         content: {
-          parts: [{
-            text: this.preprocessText(text)
-          }]
-        }
+          parts: [
+            {
+              text: this.preprocessText(text),
+            },
+          ],
+        },
       }));
 
       const requestBody = {
-        requests
+        requests,
       };
 
       const response = await this.makeRequest(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.error) {
         throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);
@@ -208,7 +213,7 @@ export class GeminiProvider extends BaseEmbeddingProvider {
           embedding: normalizedEmbedding,
           dimensions: embedding.length,
           model: this.config.model,
-          provider: this.name
+          provider: this.name,
         });
       }
 
@@ -245,14 +250,18 @@ export class GeminiProvider extends BaseEmbeddingProvider {
 
       const url = `${this.config.baseUrl}/v1/models/${this.config.model}`;
 
-      const response = await this.makeRequest(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.config.apiKey}`
-        }
-      }, 5000);
+      const response = await this.makeRequest(
+        url,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${this.config.apiKey}`,
+          },
+        },
+        5000
+      );
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.error) {
         throw new Error(`Gemini API error: ${data.error.message || 'Unknown error'}`);

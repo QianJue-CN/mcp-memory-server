@@ -23,13 +23,16 @@ export interface SystemMetrics {
 }
 
 export class PerformanceMonitor {
-  private metrics: Map<string, {
-    count: number;
-    totalDuration: number;
-    minDuration: number;
-    maxDuration: number;
-    lastExecuted: string;
-  }> = new Map();
+  private metrics: Map<
+    string,
+    {
+      count: number;
+      totalDuration: number;
+      minDuration: number;
+      maxDuration: number;
+      lastExecuted: string;
+    }
+  > = new Map();
 
   private systemMetricsHistory: SystemMetrics[] = [];
   private maxHistorySize: number = 100;
@@ -53,7 +56,7 @@ export class PerformanceMonitor {
         totalDuration: duration,
         minDuration: duration,
         maxDuration: duration,
-        lastExecuted: now
+        lastExecuted: now,
       });
     }
   }
@@ -88,7 +91,7 @@ export class PerformanceMonitor {
         averageDuration: data.totalDuration / data.count,
         minDuration: data.minDuration,
         maxDuration: data.maxDuration,
-        lastExecuted: data.lastExecuted
+        lastExecuted: data.lastExecuted,
       });
     }
 
@@ -103,7 +106,7 @@ export class PerformanceMonitor {
     const metrics: SystemMetrics = {
       memoryUsage,
       uptime: process.uptime(),
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     this.systemMetricsHistory.push(metrics);
@@ -176,7 +179,7 @@ export class PerformanceMonitor {
       slowestOperation,
       fastestOperation,
       mostFrequentOperation,
-      systemMetrics
+      systemMetrics,
     };
   }
 
@@ -196,7 +199,7 @@ export class PerformanceMonitor {
 
     // 清理系统指标历史
     this.systemMetricsHistory = this.systemMetricsHistory.filter(
-      metric => new Date(metric.timestamp) > cutoffTime
+      (metric) => new Date(metric.timestamp) > cutoffTime
     );
 
     // 清理操作指标（如果最后执行时间超过阈值）
@@ -226,7 +229,7 @@ export class PerformanceMonitor {
     return {
       operationMetrics: this.getOperationMetrics(),
       systemMetricsHistory: this.getSystemMetricsHistory(),
-      summary: this.getPerformanceSummary()
+      summary: this.getPerformanceSummary(),
     };
   }
 

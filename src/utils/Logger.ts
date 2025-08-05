@@ -5,7 +5,7 @@ export enum LogLevel {
   DEBUG = 0,
   INFO = 1,
   WARN = 2,
-  ERROR = 3
+  ERROR = 3,
 }
 
 export interface LogEntry {
@@ -79,15 +79,15 @@ export class Logger {
    */
   getLogs(level?: LogLevel, limit?: number): LogEntry[] {
     let logs = this.logEntries;
-    
+
     if (level !== undefined) {
-      logs = logs.filter(entry => entry.level >= level);
+      logs = logs.filter((entry) => entry.level >= level);
     }
-    
+
     if (limit !== undefined) {
       logs = logs.slice(-limit);
     }
-    
+
     return logs;
   }
 
@@ -120,7 +120,7 @@ export class Logger {
       debug: 0,
       info: 0,
       warn: 0,
-      error: 0
+      error: 0,
     };
 
     for (const entry of this.logEntries) {
@@ -172,7 +172,7 @@ export class Logger {
       context,
       operation,
       duration,
-      error
+      error,
     };
 
     this.logEntries.push(entry);
@@ -192,7 +192,7 @@ export class Logger {
   private outputToConsole(entry: LogEntry): void {
     const levelNames = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
     const levelName = levelNames[entry.level];
-    
+
     const logData = {
       timestamp: entry.timestamp,
       level: levelName,
@@ -200,7 +200,7 @@ export class Logger {
       ...(entry.context && { context: entry.context }),
       ...(entry.operation && { operation: entry.operation }),
       ...(entry.duration !== undefined && { duration: `${entry.duration}ms` }),
-      ...(entry.error && { error: entry.error.message, stack: entry.error.stack })
+      ...(entry.error && { error: entry.error.message, stack: entry.error.stack }),
     };
 
     const logString = JSON.stringify(logData);

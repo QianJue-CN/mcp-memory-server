@@ -43,6 +43,7 @@ export class FileManager {
    * 安全地读取 JSON 文件
    */
   async readJsonFile<T = any>(filePath: string): Promise<T[]> {
+    await this.ensureStorageDirectory();
     try {
       // 检查文件是否存在
       await fs.access(filePath);
@@ -159,10 +160,11 @@ export class FileManager {
     try {
       await this.ensureStorageDirectory();
       const files = await fs.readdir(this.config.storagePath);
-      return files.filter(file =>
-        file.endsWith('.json') &&
-        (file === this.config.globalMemoryFile ||
-          file.startsWith(this.config.conversationFilePrefix))
+      return files.filter(
+        (file) =>
+          file.endsWith('.json') &&
+          (file === this.config.globalMemoryFile ||
+            file.startsWith(this.config.conversationFilePrefix))
       );
     } catch (error) {
       console.warn('Failed to list memory files:', error);

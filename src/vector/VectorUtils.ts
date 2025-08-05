@@ -72,12 +72,12 @@ export class VectorUtils {
    */
   static normalize(vector: number[]): number[] {
     const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
-    
+
     if (magnitude === 0) {
       throw new Error('Cannot normalize zero vector');
     }
 
-    return vector.map(val => val / magnitude);
+    return vector.map((val) => val / magnitude);
   }
 
   /**
@@ -120,7 +120,7 @@ export class VectorUtils {
    * 向量标量乘法
    */
   static multiply(vector: number[], scalar: number): number[] {
-    return vector.map(val => val * scalar);
+    return vector.map((val) => val * scalar);
   }
 
   /**
@@ -138,13 +138,17 @@ export class VectorUtils {
    * 批量计算相似度
    */
   static batchCosineSimilarity(queryVector: number[], vectors: number[][]): number[] {
-    return vectors.map(vector => this.cosineSimilarity(queryVector, vector));
+    return vectors.map((vector) => this.cosineSimilarity(queryVector, vector));
   }
 
   /**
    * 找到最相似的向量索引
    */
-  static findMostSimilar(queryVector: number[], vectors: number[][], threshold: number = 0): {
+  static findMostSimilar(
+    queryVector: number[],
+    vectors: number[][],
+    threshold: number = 0
+  ): {
     index: number;
     similarity: number;
   } | null {
@@ -166,18 +170,18 @@ export class VectorUtils {
    * 找到前N个最相似的向量
    */
   static findTopSimilar(
-    queryVector: number[], 
-    vectors: number[][], 
-    topK: number = 10, 
+    queryVector: number[],
+    vectors: number[][],
+    topK: number = 10,
     threshold: number = 0
   ): Array<{ index: number; similarity: number }> {
     const similarities = vectors.map((vector, index) => ({
       index,
-      similarity: this.cosineSimilarity(queryVector, vector)
+      similarity: this.cosineSimilarity(queryVector, vector),
     }));
 
     return similarities
-      .filter(item => item.similarity >= threshold)
+      .filter((item) => item.similarity >= threshold)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, topK);
   }
@@ -186,9 +190,11 @@ export class VectorUtils {
    * 验证向量格式
    */
   static validateVector(vector: any): vector is number[] {
-    return Array.isArray(vector) && 
-           vector.length > 0 && 
-           vector.every(val => typeof val === 'number' && isFinite(val));
+    return (
+      Array.isArray(vector) &&
+      vector.length > 0 &&
+      vector.every((val) => typeof val === 'number' && isFinite(val))
+    );
   }
 
   /**
@@ -196,9 +202,9 @@ export class VectorUtils {
    */
   static checkDimensions(vectors: number[][]): boolean {
     if (vectors.length === 0) return true;
-    
+
     const expectedDim = vectors[0].length;
-    return vectors.every(vector => vector.length === expectedDim);
+    return vectors.every((vector) => vector.length === expectedDim);
   }
 
   /**
@@ -217,18 +223,18 @@ export class VectorUtils {
         dimensions: 0,
         avgMagnitude: 0,
         minMagnitude: 0,
-        maxMagnitude: 0
+        maxMagnitude: 0,
       };
     }
 
-    const magnitudes = vectors.map(vector => this.l2Norm(vector));
-    
+    const magnitudes = vectors.map((vector) => this.l2Norm(vector));
+
     return {
       count: vectors.length,
       dimensions: vectors[0].length,
       avgMagnitude: magnitudes.reduce((sum, mag) => sum + mag, 0) / magnitudes.length,
       minMagnitude: Math.min(...magnitudes),
-      maxMagnitude: Math.max(...magnitudes)
+      maxMagnitude: Math.max(...magnitudes),
     };
   }
 
@@ -236,14 +242,14 @@ export class VectorUtils {
    * 向量量化（减少精度以节省存储空间）
    */
   static quantize(vector: number[], precision: number = 6): number[] {
-    return vector.map(val => parseFloat(val.toFixed(precision)));
+    return vector.map((val) => parseFloat(val.toFixed(precision)));
   }
 
   /**
    * 检查向量是否为零向量
    */
   static isZeroVector(vector: number[], tolerance: number = 1e-10): boolean {
-    return vector.every(val => Math.abs(val) < tolerance);
+    return vector.every((val) => Math.abs(val) < tolerance);
   }
 
   /**

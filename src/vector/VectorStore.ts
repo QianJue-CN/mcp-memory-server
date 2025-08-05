@@ -23,7 +23,7 @@ export class MemoryVectorStore implements VectorStore {
       // 每30秒自动保存一次
       this.saveInterval = setInterval(() => {
         if (this.isDirty) {
-          this.save().catch(error => {
+          this.save().catch((error) => {
             logger.error('Auto-save failed:', error);
           });
         }
@@ -34,7 +34,12 @@ export class MemoryVectorStore implements VectorStore {
   /**
    * 添加向量
    */
-  async addVector(id: string, embedding: number[], content: string, metadata?: Record<string, any>): Promise<void> {
+  async addVector(
+    id: string,
+    embedding: number[],
+    content: string,
+    metadata?: Record<string, any>
+  ): Promise<void> {
     if (!VectorUtils.validateVector(embedding)) {
       throw new Error('Invalid embedding vector');
     }
@@ -50,7 +55,7 @@ export class MemoryVectorStore implements VectorStore {
       content,
       metadata,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     this.vectors.set(id, vectorEntry);
@@ -62,7 +67,11 @@ export class MemoryVectorStore implements VectorStore {
   /**
    * 搜索相似向量
    */
-  async searchSimilar(queryEmbedding: number[], limit: number, threshold: number = 0.7): Promise<VectorSearchResult[]> {
+  async searchSimilar(
+    queryEmbedding: number[],
+    limit: number,
+    threshold: number = 0.7
+  ): Promise<VectorSearchResult[]> {
     if (!VectorUtils.validateVector(queryEmbedding)) {
       throw new Error('Invalid query embedding vector');
     }
@@ -95,7 +104,7 @@ export class MemoryVectorStore implements VectorStore {
       id: entry.id,
       similarity,
       content: entry.content,
-      metadata: entry.metadata
+      metadata: entry.metadata,
     }));
   }
 
@@ -115,7 +124,12 @@ export class MemoryVectorStore implements VectorStore {
   /**
    * 更新向量
    */
-  async updateVector(id: string, embedding: number[], content: string, metadata?: Record<string, any>): Promise<boolean> {
+  async updateVector(
+    id: string,
+    embedding: number[],
+    content: string,
+    metadata?: Record<string, any>
+  ): Promise<boolean> {
     const existingEntry = this.vectors.get(id);
     if (!existingEntry) {
       return false;
@@ -134,7 +148,7 @@ export class MemoryVectorStore implements VectorStore {
       embedding: VectorUtils.quantize(embedding),
       content,
       metadata,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     this.vectors.set(id, updatedEntry);
@@ -187,7 +201,7 @@ export class MemoryVectorStore implements VectorStore {
       const data = {
         version: '1.0',
         timestamp: new Date().toISOString(),
-        vectors: Array.from(this.vectors.entries()).map(([, entry]) => entry)
+        vectors: Array.from(this.vectors.entries()).map(([, entry]) => entry),
       };
 
       // 写入文件
@@ -227,7 +241,7 @@ export class MemoryVectorStore implements VectorStore {
           content: vectorData.content,
           metadata: vectorData.metadata,
           createdAt: vectorData.createdAt,
-          updatedAt: vectorData.updatedAt
+          updatedAt: vectorData.updatedAt,
         };
 
         this.vectors.set(entry.id, entry);
@@ -250,7 +264,7 @@ export class MemoryVectorStore implements VectorStore {
    */
   async getStats(): Promise<VectorStats> {
     const vectors = Array.from(this.vectors.values());
-    const embeddings = vectors.map(v => v.embedding);
+    const embeddings = vectors.map((v) => v.embedding);
 
     let totalSize = 0;
     try {
@@ -266,21 +280,24 @@ export class MemoryVectorStore implements VectorStore {
       totalVectors: this.vectors.size,
       averageDimensions: vectorStats.dimensions,
       storageSize: totalSize,
-      lastUpdated: vectors.length > 0
-        ? Math.max(...vectors.map(v => new Date(v.updatedAt).getTime())).toString()
-        : new Date().toISOString()
+      lastUpdated:
+        vectors.length > 0
+          ? Math.max(...vectors.map((v) => new Date(v.updatedAt).getTime())).toString()
+          : new Date().toISOString(),
     };
   }
 
   /**
    * 批量添加向量
    */
-  async addVectors(vectors: Array<{
-    id: string;
-    embedding: number[];
-    content: string;
-    metadata?: Record<string, any>;
-  }>): Promise<void> {
+  async addVectors(
+    vectors: Array<{
+      id: string;
+      embedding: number[];
+      content: string;
+      metadata?: Record<string, any>;
+    }>
+  ): Promise<void> {
     for (const vector of vectors) {
       await this.addVector(vector.id, vector.embedding, vector.content, vector.metadata);
     }
@@ -297,7 +314,7 @@ export class MemoryVectorStore implements VectorStore {
 
     // 如果有未保存的更改，尝试保存
     if (this.isDirty && this.autoSave) {
-      this.save().catch(error => {
+      this.save().catch((error) => {
         logger.error('Failed to save during destroy:', error);
       });
     }

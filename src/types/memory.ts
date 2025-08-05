@@ -4,7 +4,7 @@ import { z } from 'zod';
 export enum MemoryType {
   GLOBAL = 'global',
   CONVERSATION = 'conversation',
-  TEMPORARY = 'temporary'
+  TEMPORARY = 'temporary',
 }
 
 // 记忆条目的 Zod 模式
@@ -17,7 +17,7 @@ export const MemoryEntrySchema = z.object({
   updatedAt: z.string().datetime(),
   tags: z.array(z.string()).optional(),
   metadata: z.record(z.any()).optional(),
-  embedding: z.array(z.number()).optional() // 添加可选的嵌入向量字段
+  embedding: z.array(z.number()).optional(), // 添加可选的嵌入向量字段
 });
 
 // 记忆条目类型
@@ -29,7 +29,7 @@ export const CreateMemoryInputSchema = z.object({
   type: z.nativeEnum(MemoryType).default(MemoryType.CONVERSATION),
   conversationId: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.any()).optional(),
 });
 
 export type CreateMemoryInput = z.infer<typeof CreateMemoryInputSchema>;
@@ -38,7 +38,7 @@ export type CreateMemoryInput = z.infer<typeof CreateMemoryInputSchema>;
 export const UpdateMemoryInputSchema = z.object({
   content: z.string().min(1).optional(),
   tags: z.array(z.string()).optional(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.any()).optional(),
 });
 
 export type UpdateMemoryInput = z.infer<typeof UpdateMemoryInputSchema>;
@@ -50,7 +50,7 @@ export const MemoryFilterSchema = z.object({
   tags: z.array(z.string()).optional(),
   searchText: z.string().optional(),
   limit: z.number().int().positive().optional(),
-  offset: z.number().int().nonnegative().optional()
+  offset: z.number().int().nonnegative().optional(),
 });
 
 export type MemoryFilter = z.infer<typeof MemoryFilterSchema>;
@@ -60,8 +60,12 @@ export const StorageConfigSchema = z.object({
   storagePath: z.string(),
   globalMemoryFile: z.string().default('global_memories.json'),
   conversationFilePrefix: z.string().default('conversation_'),
-  maxFileSize: z.number().int().positive().default(10 * 1024 * 1024), // 10MB
-  backupEnabled: z.boolean().default(true)
+  maxFileSize: z
+    .number()
+    .int()
+    .positive()
+    .default(10 * 1024 * 1024), // 10MB
+  backupEnabled: z.boolean().default(true),
 });
 
 export type StorageConfig = z.infer<typeof StorageConfigSchema>;

@@ -1,4 +1,9 @@
-import { EmbeddingProvider, EmbeddingResult, EmbeddingConfig, EmbeddingConfigSchema } from '../types/vector.js';
+import {
+  EmbeddingProvider,
+  EmbeddingResult,
+  EmbeddingConfig,
+  EmbeddingConfigSchema,
+} from '../types/vector.js';
 import { EmbeddingProviderFactory } from './EmbeddingProvider.js';
 import { logger } from '../utils/Logger.js';
 import * as fs from 'fs/promises';
@@ -26,7 +31,9 @@ export class EmbeddingManager {
         await this.createProvider(this.config);
       }
     } catch (error) {
-      logger.warn('Failed to initialize embedding manager:', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Failed to initialize embedding manager:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -53,7 +60,9 @@ export class EmbeddingManager {
     // 持久化配置
     await this.saveConfig();
 
-    logger.info(`Successfully configured ${validatedConfig.provider} embedding provider with model ${validatedConfig.model}`);
+    logger.info(
+      `Successfully configured ${validatedConfig.provider} embedding provider with model ${validatedConfig.model}`
+    );
   }
 
   /**
@@ -84,7 +93,7 @@ export class EmbeddingManager {
     }
 
     // 过滤空文本
-    const validTexts = texts.filter(text => text && text.trim().length > 0);
+    const validTexts = texts.filter((text) => text && text.trim().length > 0);
     if (validTexts.length === 0) {
       throw new Error('No valid texts provided');
     }
@@ -189,7 +198,9 @@ export class EmbeddingManager {
       logger.info(`Loaded embedding configuration from ${this.configPath}`);
     } catch (error) {
       if ((error as any).code !== 'ENOENT') {
-        logger.warn(`Failed to load embedding configuration:`, { error: error instanceof Error ? error.message : String(error) });
+        logger.warn(`Failed to load embedding configuration:`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
   }
@@ -225,7 +236,7 @@ export class EmbeddingManager {
     const baseTemplate = {
       provider,
       timeout: 30000,
-      maxRetries: 3
+      maxRetries: 3,
     };
 
     switch (provider) {
@@ -234,7 +245,7 @@ export class EmbeddingManager {
           ...baseTemplate,
           baseUrl: 'http://localhost:11434',
           model: 'nomic-embed-text', // 常用的Ollama嵌入模型
-          dimensions: 768
+          dimensions: 768,
         };
 
       case 'gemini':
@@ -243,7 +254,7 @@ export class EmbeddingManager {
           baseUrl: 'https://generativelanguage.googleapis.com',
           model: 'embedding-001',
           apiKey: 'your-gemini-api-key',
-          dimensions: 768
+          dimensions: 768,
         };
 
       case 'openai':
@@ -252,7 +263,7 @@ export class EmbeddingManager {
           baseUrl: 'https://api.openai.com',
           model: 'text-embedding-3-small',
           apiKey: 'your-openai-api-key',
-          dimensions: 1536
+          dimensions: 1536,
         };
 
       default:

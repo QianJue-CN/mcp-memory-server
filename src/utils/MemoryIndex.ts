@@ -173,7 +173,7 @@ export class MemoryIndex {
       types: this.typeIndex.size,
       conversations: this.conversationIndex.size,
       metadataKeys: this.metadataIndex.size,
-      dates: this.dateIndex.size
+      dates: this.dateIndex.size,
     };
   }
 
@@ -219,7 +219,7 @@ export class MemoryIndex {
       .toLowerCase()
       .replace(/[^\w\s\u4e00-\u9fff]/g, ' ') // 保留中文字符
       .split(/\s+/)
-      .filter(word => word.length > 1); // 过滤单字符
+      .filter((word) => word.length > 1); // 过滤单字符
   }
 
   /**

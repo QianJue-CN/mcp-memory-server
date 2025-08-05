@@ -47,7 +47,7 @@ export class OllamaProvider extends BaseEmbeddingProvider {
 
       const requestBody = {
         model: this.config.model,
-        prompt: processedText
+        prompt: processedText,
       };
 
       logger.debug(`Generating Ollama embedding for text: ${processedText.substring(0, 100)}...`);
@@ -55,12 +55,12 @@ export class OllamaProvider extends BaseEmbeddingProvider {
       const response = await this.makeRequest(url, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (!data.embedding || !Array.isArray(data.embedding)) {
         throw new Error('Invalid response format from Ollama API');
@@ -82,7 +82,7 @@ export class OllamaProvider extends BaseEmbeddingProvider {
         embedding: normalizedEmbedding,
         dimensions: this._dimensions,
         model: this.config.model,
-        provider: this.name
+        provider: this.name,
       };
     });
   }
@@ -103,10 +103,13 @@ export class OllamaProvider extends BaseEmbeddingProvider {
 
         // 添加小延迟避免过载
         if (i < texts.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          await new Promise((resolve) => setTimeout(resolve, 100));
         }
       } catch (error) {
-        logger.error(`Failed to generate embedding for text ${i + 1}: ${texts[i].substring(0, 50)}...`, error as Error);
+        logger.error(
+          `Failed to generate embedding for text ${i + 1}: ${texts[i].substring(0, 50)}...`,
+          error as Error
+        );
         throw error;
       }
     }
@@ -124,21 +127,27 @@ export class OllamaProvider extends BaseEmbeddingProvider {
       }
 
       const url = `${this.config.baseUrl}/api/tags`;
-      const response = await this.makeRequest(url, {
-        method: 'GET'
-      }, 5000); // 5秒超时
+      const response = await this.makeRequest(
+        url,
+        {
+          method: 'GET',
+        },
+        5000
+      ); // 5秒超时
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       // 检查模型是否可用
       if (data.models && Array.isArray(data.models)) {
-        const modelExists = data.models.some((model: any) =>
-          model.name === this.config.model ||
-          model.name.startsWith(this.config.model)
+        const modelExists = data.models.some(
+          (model: any) =>
+            model.name === this.config.model || model.name.startsWith(this.config.model)
         );
 
         if (!modelExists) {
-          logger.warn(`Model ${this.config.model} not found in Ollama. Available models: ${data.models.map((m: any) => m.name).join(', ')}`);
+          logger.warn(
+            `Model ${this.config.model} not found in Ollama. Available models: ${data.models.map((m: any) => m.name).join(', ')}`
+          );
           return false;
         }
       }
@@ -160,11 +169,15 @@ export class OllamaProvider extends BaseEmbeddingProvider {
       }
 
       const url = `${this.config.baseUrl}/api/tags`;
-      const response = await this.makeRequest(url, {
-        method: 'GET'
-      }, 5000);
+      const response = await this.makeRequest(
+        url,
+        {
+          method: 'GET',
+        },
+        5000
+      );
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.models && Array.isArray(data.models)) {
         return data.models.map((model: any) => model.name);

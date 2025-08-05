@@ -11,14 +11,14 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
   private static readonly MODEL_DIMENSIONS: Record<string, number> = {
     'text-embedding-3-small': 1536,
     'text-embedding-3-large': 3072,
-    'text-embedding-ada-002': 1536
+    'text-embedding-ada-002': 1536,
   };
 
   constructor(config: EmbeddingConfig) {
     super({
       ...config,
       baseUrl: config.baseUrl || OpenAIProvider.DEFAULT_BASE_URL,
-      model: config.model || OpenAIProvider.DEFAULT_MODEL
+      model: config.model || OpenAIProvider.DEFAULT_MODEL,
     });
   }
 
@@ -31,9 +31,7 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
   }
 
   get dimensions(): number {
-    return this.config.dimensions ||
-      OpenAIProvider.MODEL_DIMENSIONS[this.config.model] ||
-      1536; // 默认维度
+    return this.config.dimensions || OpenAIProvider.MODEL_DIMENSIONS[this.config.model] || 1536; // 默认维度
   }
 
   /**
@@ -59,7 +57,7 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
       const requestBody = {
         input: processedText,
         model: this.config.model,
-        encoding_format: 'float'
+        encoding_format: 'float',
       };
 
       // 如果指定了维度且模型支持，添加dimensions参数
@@ -73,12 +71,12 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.error) {
         throw new Error(`OpenAI API error: ${data.error.message || 'Unknown error'}`);
@@ -103,7 +101,7 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
         embedding: normalizedEmbedding,
         dimensions: embedding.length,
         model: this.config.model,
-        provider: this.name
+        provider: this.name,
       };
     });
   }
@@ -124,7 +122,9 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
 
     for (let i = 0; i < texts.length; i += batchSize) {
       const batch = texts.slice(i, i + batchSize);
-      logger.debug(`Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(texts.length / batchSize)}`);
+      logger.debug(
+        `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(texts.length / batchSize)}`
+      );
 
       const batchResults = await this.processBatch(batch);
       results.push(...batchResults);
@@ -140,12 +140,12 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
     return this.withRetry(async () => {
       const url = `${this.config.baseUrl}/v1/embeddings`;
 
-      const processedTexts = texts.map(text => this.preprocessText(text));
+      const processedTexts = texts.map((text) => this.preprocessText(text));
 
       const requestBody = {
         input: processedTexts,
         model: this.config.model,
-        encoding_format: 'float'
+        encoding_format: 'float',
       };
 
       // 如果指定了维度且模型支持，添加dimensions参数
@@ -157,12 +157,12 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiKey}`
+          Authorization: `Bearer ${this.config.apiKey}`,
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
-      const data = await response.json() as any;
+      const data = (await response.json()) as any;
 
       if (data.error) {
         throw new Error(`OpenAI API error: ${data.error.message || 'Unknown error'}`);
@@ -189,7 +189,7 @@ export class OpenAIProvider extends BaseEmbeddingProvider {
           embedding: normalizedEmbedding,
           dimensions: embedding.length,
           model: this.config.model,
-          provider: this.name
+          provider: this.name,
         });
       }
 

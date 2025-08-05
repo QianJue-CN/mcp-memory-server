@@ -22,30 +22,30 @@ export class MemoryTools {
           properties: {
             content: {
               type: 'string',
-              description: 'The content of the memory to store'
+              description: 'The content of the memory to store',
             },
             type: {
               type: 'string',
               enum: ['global', 'conversation', 'temporary'],
               description: 'The type of memory (global, conversation, or temporary)',
-              default: 'conversation'
+              default: 'conversation',
             },
             conversationId: {
               type: 'string',
-              description: 'The conversation ID for conversation-type memories (optional)'
+              description: 'The conversation ID for conversation-type memories (optional)',
             },
             tags: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Optional tags for categorizing the memory'
+              description: 'Optional tags for categorizing the memory',
             },
             metadata: {
               type: 'object',
-              description: 'Optional metadata object for additional information'
-            }
+              description: 'Optional metadata object for additional information',
+            },
           },
-          required: ['content']
-        }
+          required: ['content'],
+        },
       },
       {
         name: 'read_memories',
@@ -56,33 +56,33 @@ export class MemoryTools {
             type: {
               type: 'string',
               enum: ['global', 'conversation', 'temporary'],
-              description: 'Filter by memory type'
+              description: 'Filter by memory type',
             },
             conversationId: {
               type: 'string',
-              description: 'Filter by conversation ID'
+              description: 'Filter by conversation ID',
             },
             tags: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Filter by tags (memories containing any of these tags)'
+              description: 'Filter by tags (memories containing any of these tags)',
             },
             searchText: {
               type: 'string',
-              description: 'Search text to filter memories by content or tags'
+              description: 'Search text to filter memories by content or tags',
             },
             limit: {
               type: 'number',
               description: 'Maximum number of memories to return',
-              minimum: 1
+              minimum: 1,
             },
             offset: {
               type: 'number',
               description: 'Number of memories to skip (for pagination)',
-              minimum: 0
-            }
-          }
-        }
+              minimum: 0,
+            },
+          },
+        },
       },
       {
         name: 'update_memory',
@@ -92,24 +92,24 @@ export class MemoryTools {
           properties: {
             memoryId: {
               type: 'string',
-              description: 'The UUID of the memory to update'
+              description: 'The UUID of the memory to update',
             },
             content: {
               type: 'string',
-              description: 'New content for the memory'
+              description: 'New content for the memory',
             },
             tags: {
               type: 'array',
               items: { type: 'string' },
-              description: 'New tags for the memory'
+              description: 'New tags for the memory',
             },
             metadata: {
               type: 'object',
-              description: 'New metadata for the memory (will be merged with existing)'
-            }
+              description: 'New metadata for the memory (will be merged with existing)',
+            },
           },
-          required: ['memoryId']
-        }
+          required: ['memoryId'],
+        },
       },
       {
         name: 'delete_memory',
@@ -119,11 +119,11 @@ export class MemoryTools {
           properties: {
             memoryId: {
               type: 'string',
-              description: 'The UUID of the memory to delete'
-            }
+              description: 'The UUID of the memory to delete',
+            },
           },
-          required: ['memoryId']
-        }
+          required: ['memoryId'],
+        },
       },
       {
         name: 'set_storage_path',
@@ -133,19 +133,19 @@ export class MemoryTools {
           properties: {
             path: {
               type: 'string',
-              description: 'The file system path where memory files should be stored'
-            }
+              description: 'The file system path where memory files should be stored',
+            },
           },
-          required: ['path']
-        }
+          required: ['path'],
+        },
       },
       {
         name: 'get_memory_stats',
         description: 'Get statistics about stored memories',
         inputSchema: {
           type: 'object',
-          properties: {}
-        }
+          properties: {},
+        },
       },
       {
         name: 'cleanup_old_conversations',
@@ -156,116 +156,119 @@ export class MemoryTools {
             maxAge: {
               type: 'number',
               description: 'Maximum age in milliseconds (default: 30 days)',
-              default: 2592000000
-            }
-          }
-        }
+              default: 2592000000,
+            },
+          },
+        },
       },
       {
         name: 'list_memories',
-        description: 'List memories with smart filtering - combines current conversation and global memories for quick access',
+        description:
+          'List memories with smart filtering - combines current conversation and global memories for quick access',
         inputSchema: {
           type: 'object',
           properties: {
             conversationId: {
               type: 'string',
-              description: 'Current conversation ID to include conversation-specific memories'
+              description: 'Current conversation ID to include conversation-specific memories',
             },
             query: {
               type: 'string',
-              description: 'Search query to filter memories by content, tags, or metadata'
+              description: 'Search query to filter memories by content, tags, or metadata',
             },
             includeGlobal: {
               type: 'boolean',
               description: 'Whether to include global memories (default: true)',
-              default: true
+              default: true,
             },
             includeConversation: {
               type: 'boolean',
               description: 'Whether to include conversation memories (default: true)',
-              default: true
+              default: true,
             },
             limit: {
               type: 'number',
               description: 'Maximum number of memories to return (default: 20)',
               default: 20,
               minimum: 1,
-              maximum: 100
+              maximum: 100,
             },
             sortBy: {
               type: 'string',
               enum: ['relevance', 'date', 'type'],
               description: 'Sort memories by relevance, date, or type (default: relevance)',
-              default: 'relevance'
-            }
-          }
-        }
+              default: 'relevance',
+            },
+          },
+        },
       },
       {
         name: 'query_memories',
-        description: 'Advanced query interface for finding specific memories with detailed filtering',
+        description:
+          'Advanced query interface for finding specific memories with detailed filtering',
         inputSchema: {
           type: 'object',
           properties: {
             searchText: {
               type: 'string',
-              description: 'Text to search for in memory content and tags'
+              description: 'Text to search for in memory content and tags',
             },
             tags: {
               type: 'array',
               items: { type: 'string' },
-              description: 'Filter by specific tags (memories containing any of these tags)'
+              description: 'Filter by specific tags (memories containing any of these tags)',
             },
             type: {
               type: 'string',
               enum: ['global', 'conversation', 'temporary'],
-              description: 'Filter by memory type'
+              description: 'Filter by memory type',
             },
             conversationId: {
               type: 'string',
-              description: 'Filter by specific conversation ID'
+              description: 'Filter by specific conversation ID',
             },
             dateRange: {
               type: 'object',
               properties: {
                 from: {
                   type: 'string',
-                  description: 'Start date (ISO 8601 format)'
+                  description: 'Start date (ISO 8601 format)',
                 },
                 to: {
                   type: 'string',
-                  description: 'End date (ISO 8601 format)'
-                }
+                  description: 'End date (ISO 8601 format)',
+                },
               },
-              description: 'Filter by date range'
+              description: 'Filter by date range',
             },
             metadata: {
               type: 'object',
-              description: 'Filter by metadata key-value pairs'
+              description: 'Filter by metadata key-value pairs',
             },
             limit: {
               type: 'number',
               description: 'Maximum number of results (default: 50)',
               default: 50,
               minimum: 1,
-              maximum: 200
+              maximum: 200,
             },
             offset: {
               type: 'number',
               description: 'Number of results to skip for pagination (default: 0)',
               default: 0,
-              minimum: 0
-            }
-          }
-        }
+              minimum: 0,
+            },
+          },
+        },
       },
       {
         name: 'get_enhanced_stats',
-        description: 'Get comprehensive statistics including memory, cache, index, and performance metrics',
+        description:
+          'Get comprehensive statistics including memory, cache, index, and performance metrics',
         inputSchema: {
           type: 'object',
-          properties: {}
-        }
+          properties: {},
+        },
       },
       {
         name: 'configure_embedding',
@@ -276,95 +279,97 @@ export class MemoryTools {
             provider: {
               type: 'string',
               enum: ['ollama', 'gemini', 'openai'],
-              description: 'The embedding provider to use'
+              description: 'The embedding provider to use',
             },
             apiKey: {
               type: 'string',
-              description: 'API key for the provider (required for gemini and openai)'
+              description: 'API key for the provider (required for gemini and openai)',
             },
             baseUrl: {
               type: 'string',
-              description: 'Base URL for the provider API (required for ollama, optional for others)'
+              description:
+                'Base URL for the provider API (required for ollama, optional for others)',
             },
             model: {
               type: 'string',
-              description: 'Model name to use for embeddings'
+              description: 'Model name to use for embeddings',
             },
             dimensions: {
               type: 'number',
-              description: 'Embedding dimensions (optional, will be auto-detected if not provided)'
+              description: 'Embedding dimensions (optional, will be auto-detected if not provided)',
             },
             timeout: {
               type: 'number',
               description: 'Request timeout in milliseconds (default: 30000)',
-              default: 30000
+              default: 30000,
             },
             maxRetries: {
               type: 'number',
               description: 'Maximum number of retries for failed requests (default: 3)',
-              default: 3
-            }
+              default: 3,
+            },
           },
-          required: ['provider', 'model']
-        }
+          required: ['provider', 'model'],
+        },
       },
       {
         name: 'semantic_search',
-        description: 'Search memories using semantic similarity based on meaning rather than exact keywords',
+        description:
+          'Search memories using semantic similarity based on meaning rather than exact keywords',
         inputSchema: {
           type: 'object',
           properties: {
             query: {
               type: 'string',
-              description: 'The search query text'
+              description: 'The search query text',
             },
             limit: {
               type: 'number',
               description: 'Maximum number of results to return (default: 10)',
               default: 10,
               minimum: 1,
-              maximum: 50
+              maximum: 50,
             },
             threshold: {
               type: 'number',
               description: 'Minimum similarity threshold (0-1, default: 0.7)',
               default: 0.7,
               minimum: 0,
-              maximum: 1
+              maximum: 1,
             },
             includeContent: {
               type: 'boolean',
               description: 'Whether to include full content in results (default: true)',
-              default: true
+              default: true,
             },
             includeMetadata: {
               type: 'boolean',
               description: 'Whether to include metadata in results (default: true)',
-              default: true
+              default: true,
             },
             hybridSearch: {
               type: 'boolean',
               description: 'Whether to combine semantic and keyword search (default: false)',
-              default: false
+              default: false,
             },
             keywordWeight: {
               type: 'number',
               description: 'Weight for keyword search in hybrid mode (0-1, default: 0.3)',
               default: 0.3,
               minimum: 0,
-              maximum: 1
-            }
+              maximum: 1,
+            },
           },
-          required: ['query']
-        }
+          required: ['query'],
+        },
       },
       {
         name: 'generate_embeddings',
-        description: 'Generate embedding vectors for existing memories that don\'t have them',
+        description: "Generate embedding vectors for existing memories that don't have them",
         inputSchema: {
           type: 'object',
-          properties: {}
-        }
+          properties: {},
+        },
       },
       {
         name: 'calculate_similarity',
@@ -374,24 +379,24 @@ export class MemoryTools {
           properties: {
             text1: {
               type: 'string',
-              description: 'First text to compare'
+              description: 'First text to compare',
             },
             text2: {
               type: 'string',
-              description: 'Second text to compare'
-            }
+              description: 'Second text to compare',
+            },
           },
-          required: ['text1', 'text2']
-        }
+          required: ['text1', 'text2'],
+        },
       },
       {
         name: 'get_vector_stats',
         description: 'Get statistics about the vector store and embedding configuration',
         inputSchema: {
           type: 'object',
-          properties: {}
-        }
-      }
+          properties: {},
+        },
+      },
     ];
   }
 
@@ -456,10 +461,10 @@ export class MemoryTools {
   private async createMemory(args: any) {
     const input: CreateMemoryInput = {
       content: args.content,
-      type: args.type ? args.type as MemoryType : MemoryType.CONVERSATION,
+      type: args.type ? (args.type as MemoryType) : MemoryType.CONVERSATION,
       conversationId: args.conversationId,
       tags: args.tags,
-      metadata: args.metadata
+      metadata: args.metadata,
     };
 
     return await this.memoryManager.createMemory(input);
@@ -470,12 +475,12 @@ export class MemoryTools {
    */
   private async readMemories(args: any) {
     const filter: MemoryFilter = {
-      type: args.type ? args.type as MemoryType : undefined,
+      type: args.type ? (args.type as MemoryType) : undefined,
       conversationId: args.conversationId,
       tags: args.tags,
       searchText: args.searchText,
       limit: args.limit,
-      offset: args.offset
+      offset: args.offset,
     };
 
     return await this.memoryManager.readMemories(filter);
@@ -489,7 +494,7 @@ export class MemoryTools {
     const input: UpdateMemoryInput = {
       content: updateData.content,
       tags: updateData.tags,
-      metadata: updateData.metadata
+      metadata: updateData.metadata,
     };
 
     return await this.memoryManager.updateMemory(memoryId, input);
@@ -533,7 +538,7 @@ export class MemoryTools {
       includeGlobal = true,
       includeConversation = true,
       limit = 20,
-      sortBy = 'relevance'
+      sortBy = 'relevance',
     } = args;
 
     try {
@@ -544,7 +549,7 @@ export class MemoryTools {
         const globalResult = await this.memoryManager.readMemories({
           type: MemoryType.GLOBAL,
           searchText: query,
-          limit: Math.ceil(limit / 2)
+          limit: Math.ceil(limit / 2),
         });
         if (globalResult.success && globalResult.data) {
           allMemories.push(...globalResult.data);
@@ -557,7 +562,7 @@ export class MemoryTools {
           type: MemoryType.CONVERSATION,
           conversationId,
           searchText: query,
-          limit: Math.ceil(limit / 2)
+          limit: Math.ceil(limit / 2),
         });
         if (convResult.success && convResult.data) {
           allMemories.push(...convResult.data);
@@ -566,7 +571,9 @@ export class MemoryTools {
 
       // 排序
       if (sortBy === 'date') {
-        allMemories.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+        allMemories.sort(
+          (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+        );
       } else if (sortBy === 'type') {
         allMemories.sort((a, b) => a.type.localeCompare(b.type));
       }
@@ -585,13 +592,13 @@ export class MemoryTools {
           conversationId,
           query,
           sortBy,
-          totalResults: allMemories.length
-        }
+          totalResults: allMemories.length,
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to list memories'
+        error: error instanceof Error ? error.message : 'Failed to list memories',
       };
     }
   }
@@ -608,7 +615,7 @@ export class MemoryTools {
       dateRange,
       metadata,
       limit = 50,
-      offset = 0
+      offset = 0,
     } = args;
 
     try {
@@ -616,10 +623,10 @@ export class MemoryTools {
       const filter: MemoryFilter = {
         searchText,
         tags,
-        type: type ? type as MemoryType : undefined,
+        type: type ? (type as MemoryType) : undefined,
         conversationId,
         limit,
-        offset
+        offset,
       };
 
       // 获取记忆
@@ -636,7 +643,7 @@ export class MemoryTools {
         const fromDate = dateRange.from ? new Date(dateRange.from) : null;
         const toDate = dateRange.to ? new Date(dateRange.to) : null;
 
-        filteredMemories = filteredMemories.filter(memory => {
+        filteredMemories = filteredMemories.filter((memory) => {
           const memoryDate = new Date(memory.createdAt);
           if (fromDate && memoryDate < fromDate) return false;
           if (toDate && memoryDate > toDate) return false;
@@ -646,7 +653,7 @@ export class MemoryTools {
 
       // 应用元数据过滤
       if (metadata && typeof metadata === 'object') {
-        filteredMemories = filteredMemories.filter(memory => {
+        filteredMemories = filteredMemories.filter((memory) => {
           if (!memory.metadata) return false;
 
           for (const [key, value] of Object.entries(metadata)) {
@@ -669,13 +676,13 @@ export class MemoryTools {
           appliedMetadataFilter: !!metadata,
           totalResults: filteredMemories.length,
           offset,
-          limit
-        }
+          limit,
+        },
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to query memories'
+        error: error instanceof Error ? error.message : 'Failed to query memories',
       };
     }
   }
@@ -701,14 +708,14 @@ export class MemoryTools {
         model: args.model,
         dimensions: args.dimensions,
         timeout: args.timeout || 30000,
-        maxRetries: args.maxRetries || 3
+        maxRetries: args.maxRetries || 3,
       };
 
       return await this.memoryManager.configureEmbedding(config);
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to configure embedding provider'
+        error: error instanceof Error ? error.message : 'Failed to configure embedding provider',
       };
     }
   }
@@ -725,14 +732,14 @@ export class MemoryTools {
         includeContent: args.includeContent !== false,
         includeMetadata: args.includeMetadata !== false,
         hybridSearch: args.hybridSearch || false,
-        keywordWeight: args.keywordWeight || 0.3
+        keywordWeight: args.keywordWeight || 0.3,
       };
 
       return await this.memoryManager.semanticSearch(options);
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to perform semantic search'
+        error: error instanceof Error ? error.message : 'Failed to perform semantic search',
       };
     }
   }
@@ -746,7 +753,7 @@ export class MemoryTools {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to generate embeddings'
+        error: error instanceof Error ? error.message : 'Failed to generate embeddings',
       };
     }
   }
@@ -761,7 +768,7 @@ export class MemoryTools {
       if (!text1 || !text2) {
         return {
           success: false,
-          error: 'Both text1 and text2 are required'
+          error: 'Both text1 and text2 are required',
         };
       }
 
@@ -769,7 +776,7 @@ export class MemoryTools {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to calculate similarity'
+        error: error instanceof Error ? error.message : 'Failed to calculate similarity',
       };
     }
   }
@@ -783,7 +790,7 @@ export class MemoryTools {
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get vector statistics'
+        error: error instanceof Error ? error.message : 'Failed to get vector statistics',
       };
     }
   }

@@ -11,19 +11,23 @@ import {
   CreateMemoryInputSchema,
   UpdateMemoryInputSchema,
   MemoryFilterSchema,
-  MemoryEntrySchema
+  MemoryEntrySchema,
 } from '../types/memory.js';
 import {
   VectorSearchResult,
   VectorStats,
   SemanticSearchOptions,
-  VectorApiResponse
+  VectorApiResponse,
 } from '../types/vector.js';
 import { FileManager } from '../utils/FileManager.js';
 import { MemoryCache } from '../utils/MemoryCache.js';
 import { MemoryIndex } from '../utils/MemoryIndex.js';
 import { logger } from '../utils/Logger.js';
-import { performanceMonitor, PerformanceMetrics, SystemMetrics } from '../utils/PerformanceMonitor.js';
+import {
+  performanceMonitor,
+  PerformanceMetrics,
+  SystemMetrics,
+} from '../utils/PerformanceMonitor.js';
 import { EmbeddingManager } from '../embedding/EmbeddingManager.js';
 import { MemoryVectorStore } from '../vector/VectorStore.js';
 import { VectorUtils } from '../vector/VectorUtils.js';
@@ -51,7 +55,7 @@ export class MemoryManager {
       globalMemoryFile: 'global_memories.json',
       conversationFilePrefix: 'conversation_',
       maxFileSize: 10 * 1024 * 1024, // 10MB
-      backupEnabled: true
+      backupEnabled: true,
     };
 
     this.fileManager = new FileManager(this.config);
@@ -62,9 +66,7 @@ export class MemoryManager {
     this.embeddingManager = new EmbeddingManager(
       path.join(defaultStoragePath, 'embedding-config.json')
     );
-    this.vectorStore = new MemoryVectorStore(
-      path.join(defaultStoragePath, 'vectors.json')
-    );
+    this.vectorStore = new MemoryVectorStore(path.join(defaultStoragePath, 'vectors.json'));
   }
 
   /**
@@ -104,7 +106,7 @@ export class MemoryManager {
         cacheSize: this.cache.size(),
         indexStats: this.index.getStats(),
         vectorEnabled: this.vectorEnabled,
-        vectorCount: await this.vectorStore.getVectorCount()
+        vectorCount: await this.vectorStore.getVectorCount(),
       });
     } catch (error) {
       logger.error('Failed to initialize memory manager', error as Error);
@@ -125,12 +127,12 @@ export class MemoryManager {
 
       return {
         success: true,
-        message: `Storage path set to: ${storagePath}`
+        message: `Storage path set to: ${storagePath}`,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to set storage path'
+        error: error instanceof Error ? error.message : 'Failed to set storage path',
       };
     }
   }
@@ -150,7 +152,7 @@ export class MemoryManager {
       logger.debug('Creating memory', {
         type: validatedInput.type,
         contentLength: validatedInput.content.length,
-        tags: validatedInput.tags
+        tags: validatedInput.tags,
       });
 
       // 创建记忆条目
@@ -163,7 +165,7 @@ export class MemoryManager {
         createdAt: now,
         updatedAt: now,
         tags: validatedInput.tags || [],
-        metadata: validatedInput.metadata || {}
+        metadata: validatedInput.metadata || {},
       };
 
       // 验证记忆条目
@@ -176,28 +178,26 @@ export class MemoryManager {
           memory.embedding = embeddingResult.embedding;
 
           // 添加到向量存储
-          await this.vectorStore.addVector(
-            memory.id,
-            embeddingResult.embedding,
-            memory.content,
-            {
-              type: memory.type,
-              conversationId: memory.conversationId,
-              tags: memory.tags,
-              createdAt: memory.createdAt
-            }
-          );
+          await this.vectorStore.addVector(memory.id, embeddingResult.embedding, memory.content, {
+            type: memory.type,
+            conversationId: memory.conversationId,
+            tags: memory.tags,
+            createdAt: memory.createdAt,
+          });
 
           logger.debug('Generated embedding for memory', {
             memoryId: memory.id,
             dimensions: embeddingResult.dimensions,
-            provider: embeddingResult.provider
+            provider: embeddingResult.provider,
           });
         } catch (error) {
-          logger.warn('Failed to generate embedding for memory, continuing without vector support', {
-            memoryId: memory.id,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
+          logger.warn(
+            'Failed to generate embedding for memory, continuing without vector support',
+            {
+              memoryId: memory.id,
+              error: error instanceof Error ? error.message : 'Unknown error',
+            }
+          );
         }
       }
 
@@ -220,19 +220,19 @@ export class MemoryManager {
       logger.info('Memory created successfully', {
         memoryId: memory.id,
         type: memory.type,
-        cacheSize: this.cache.size()
+        cacheSize: this.cache.size(),
       });
 
       return {
         success: true,
         data: memory,
-        message: 'Memory created successfully'
+        message: 'Memory created successfully',
       };
     } catch (error) {
       logger.error('Failed to create memory', error as Error, { input });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to create memory'
+        error: error instanceof Error ? error.message : 'Failed to create memory',
       };
     } finally {
       timer();
@@ -261,7 +261,7 @@ export class MemoryManager {
           searchText: validatedFilter.searchText,
           tags: validatedFilter.tags,
           type: validatedFilter.type,
-          conversationId: validatedFilter.conversationId
+          conversationId: validatedFilter.conversationId,
         });
 
         // 从缓存中获取记忆
@@ -277,15 +277,19 @@ export class MemoryManager {
 
         // 应用基本过滤器
         if (validatedFilter.type) {
-          filteredMemories = filteredMemories.filter(m => m.type === validatedFilter.type);
+          filteredMemories = filteredMemories.filter((m) => m.type === validatedFilter.type);
         }
         if (validatedFilter.conversationId) {
-          filteredMemories = filteredMemories.filter(m => m.conversationId === validatedFilter.conversationId);
+          filteredMemories = filteredMemories.filter(
+            (m) => m.conversationId === validatedFilter.conversationId
+          );
         }
       }
 
       // 按创建时间排序（最新的在前）
-      filteredMemories.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      filteredMemories.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
 
       // 应用分页
       const totalResults = filteredMemories.length;
@@ -299,19 +303,19 @@ export class MemoryManager {
       logger.info('Memories read successfully', {
         totalResults,
         returnedResults: filteredMemories.length,
-        cacheHitRate: this.cache.getStats().hitRate
+        cacheHitRate: this.cache.getStats().hitRate,
       });
 
       return {
         success: true,
         data: filteredMemories,
-        message: `Found ${filteredMemories.length} memories`
+        message: `Found ${filteredMemories.length} memories`,
       };
     } catch (error) {
       logger.error('Failed to read memories', error as Error, { filter });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to read memories'
+        error: error instanceof Error ? error.message : 'Failed to read memories',
       };
     } finally {
       timer();
@@ -321,7 +325,10 @@ export class MemoryManager {
   /**
    * 更新记忆
    */
-  async updateMemory(memoryId: string, input: UpdateMemoryInput): Promise<ApiResponse<MemoryEntry>> {
+  async updateMemory(
+    memoryId: string,
+    input: UpdateMemoryInput
+  ): Promise<ApiResponse<MemoryEntry>> {
     const timer = performanceMonitor.startTimer('update_memory');
 
     try {
@@ -337,7 +344,7 @@ export class MemoryManager {
       if (!oldMemory) {
         return {
           success: false,
-          error: 'Memory not found'
+          error: 'Memory not found',
         };
       }
 
@@ -347,7 +354,7 @@ export class MemoryManager {
         content: validatedInput.content ?? oldMemory.content,
         tags: validatedInput.tags ?? oldMemory.tags,
         metadata: { ...oldMemory.metadata, ...validatedInput.metadata },
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
 
       // 验证更新后的记忆
@@ -360,7 +367,7 @@ export class MemoryManager {
       const memories = await this.fileManager.readJsonFile<MemoryEntry>(filePath);
 
       // 替换更新的记忆
-      const updatedMemories = memories.map(m => m.id === memoryId ? updatedMemory : m);
+      const updatedMemories = memories.map((m) => (m.id === memoryId ? updatedMemory : m));
 
       // 保存到文件
       await this.fileManager.writeJsonFile(filePath, updatedMemories);
@@ -371,19 +378,19 @@ export class MemoryManager {
 
       logger.info('Memory updated successfully', {
         memoryId,
-        changes: Object.keys(validatedInput)
+        changes: Object.keys(validatedInput),
       });
 
       return {
         success: true,
         data: updatedMemory,
-        message: 'Memory updated successfully'
+        message: 'Memory updated successfully',
       };
     } catch (error) {
       logger.error('Failed to update memory', error as Error, { memoryId, input });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to update memory'
+        error: error instanceof Error ? error.message : 'Failed to update memory',
       };
     } finally {
       timer();
@@ -406,7 +413,7 @@ export class MemoryManager {
       if (!memory) {
         return {
           success: false,
-          error: 'Memory not found'
+          error: 'Memory not found',
         };
       }
 
@@ -417,7 +424,7 @@ export class MemoryManager {
       const memories = await this.fileManager.readJsonFile<MemoryEntry>(filePath);
 
       // 过滤掉要删除的记忆
-      const filteredMemories = memories.filter(m => m.id !== memoryId);
+      const filteredMemories = memories.filter((m) => m.id !== memoryId);
 
       // 保存到文件
       await this.fileManager.writeJsonFile(filePath, filteredMemories);
@@ -429,18 +436,18 @@ export class MemoryManager {
       logger.info('Memory deleted successfully', {
         memoryId,
         type: memory.type,
-        cacheSize: this.cache.size()
+        cacheSize: this.cache.size(),
       });
 
       return {
         success: true,
-        message: 'Memory deleted successfully'
+        message: 'Memory deleted successfully',
       };
     } catch (error) {
       logger.error('Failed to delete memory', error as Error, { memoryId });
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to delete memory'
+        error: error instanceof Error ? error.message : 'Failed to delete memory',
       };
     } finally {
       timer();
@@ -452,6 +459,7 @@ export class MemoryManager {
    */
   async getMemoryStats(): Promise<ApiResponse<MemoryStats>> {
     try {
+      await this.initialize();
       const files = await this.fileManager.listMemoryFiles();
       let totalMemories = 0;
       let globalMemories = 0;
@@ -487,18 +495,18 @@ export class MemoryManager {
         globalMemories,
         conversationMemories,
         temporaryMemories,
-        storageSize
+        storageSize,
       };
 
       return {
         success: true,
         data: stats,
-        message: 'Memory statistics retrieved successfully'
+        message: 'Memory statistics retrieved successfully',
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get memory statistics'
+        error: error instanceof Error ? error.message : 'Failed to get memory statistics',
       };
     }
   }
@@ -506,7 +514,9 @@ export class MemoryManager {
   /**
    * 根据 ID 查找记忆
    */
-  private async findMemoryById(memoryId: string): Promise<ApiResponse<{ memory: MemoryEntry; filePath: string }>> {
+  private async findMemoryById(
+    memoryId: string
+  ): Promise<ApiResponse<{ memory: MemoryEntry; filePath: string }>> {
     try {
       const files = await this.fileManager.listMemoryFiles();
 
@@ -514,23 +524,23 @@ export class MemoryManager {
         const filePath = path.join(this.config.storagePath, file);
         const memories = await this.fileManager.readJsonFile<MemoryEntry>(filePath);
 
-        const memory = memories.find(m => m.id === memoryId);
+        const memory = memories.find((m) => m.id === memoryId);
         if (memory) {
           return {
             success: true,
-            data: { memory, filePath }
+            data: { memory, filePath },
           };
         }
       }
 
       return {
         success: false,
-        error: 'Memory not found'
+        error: 'Memory not found',
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to find memory'
+        error: error instanceof Error ? error.message : 'Failed to find memory',
       };
     }
   }
@@ -543,27 +553,26 @@ export class MemoryManager {
 
     // 按类型过滤
     if (filter.type) {
-      filtered = filtered.filter(m => m.type === filter.type);
+      filtered = filtered.filter((m) => m.type === filter.type);
     }
 
     // 按对话 ID 过滤
     if (filter.conversationId) {
-      filtered = filtered.filter(m => m.conversationId === filter.conversationId);
+      filtered = filtered.filter((m) => m.conversationId === filter.conversationId);
     }
 
     // 按标签过滤
     if (filter.tags && filter.tags.length > 0) {
-      filtered = filtered.filter(m =>
-        filter.tags!.some(tag => m.tags?.includes(tag))
-      );
+      filtered = filtered.filter((m) => filter.tags!.some((tag) => m.tags?.includes(tag)));
     }
 
     // 按搜索文本过滤
     if (filter.searchText) {
       const searchText = filter.searchText.toLowerCase();
-      filtered = filtered.filter(m =>
-        m.content.toLowerCase().includes(searchText) ||
-        m.tags?.some(tag => tag.toLowerCase().includes(searchText))
+      filtered = filtered.filter(
+        (m) =>
+          m.content.toLowerCase().includes(searchText) ||
+          m.tags?.some((tag) => tag.toLowerCase().includes(searchText))
       );
     }
 
@@ -596,12 +605,12 @@ export class MemoryManager {
       return {
         success: true,
         data: deletedCount,
-        message: `Cleaned up ${deletedCount} old conversation files`
+        message: `Cleaned up ${deletedCount} old conversation files`,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to cleanup old conversations'
+        error: error instanceof Error ? error.message : 'Failed to cleanup old conversations',
       };
     }
   }
@@ -621,33 +630,35 @@ export class MemoryManager {
   /**
    * 获取增强的记忆统计信息
    */
-  async getEnhancedStats(): Promise<ApiResponse<{
-    memoryStats: MemoryStats;
-    cacheStats: {
-      size: number;
-      maxSize: number;
-      hitCount: number;
-      missCount: number;
-      hitRate: number;
-    };
-    indexStats: {
-      contentTerms: number;
-      tags: number;
-      types: number;
-      conversations: number;
-      metadataKeys: number;
-      dates: number;
-    };
-    performanceStats: {
-      totalOperations: number;
-      uniqueOperations: number;
-      averageOperationTime: number;
-      slowestOperation: PerformanceMetrics | null;
-      fastestOperation: PerformanceMetrics | null;
-      mostFrequentOperation: PerformanceMetrics | null;
-      systemMetrics: SystemMetrics;
-    };
-  }>> {
+  async getEnhancedStats(): Promise<
+    ApiResponse<{
+      memoryStats: MemoryStats;
+      cacheStats: {
+        size: number;
+        maxSize: number;
+        hitCount: number;
+        missCount: number;
+        hitRate: number;
+      };
+      indexStats: {
+        contentTerms: number;
+        tags: number;
+        types: number;
+        conversations: number;
+        metadataKeys: number;
+        dates: number;
+      };
+      performanceStats: {
+        totalOperations: number;
+        uniqueOperations: number;
+        averageOperationTime: number;
+        slowestOperation: PerformanceMetrics | null;
+        fastestOperation: PerformanceMetrics | null;
+        mostFrequentOperation: PerformanceMetrics | null;
+        systemMetrics: SystemMetrics;
+      };
+    }>
+  > {
     try {
       await this.initialize();
 
@@ -662,14 +673,14 @@ export class MemoryManager {
           memoryStats: memoryStatsResult.data!,
           cacheStats: this.cache.getStats(),
           indexStats: this.index.getStats(),
-          performanceStats: performanceMonitor.getPerformanceSummary()
+          performanceStats: performanceMonitor.getPerformanceSummary(),
         },
-        message: 'Enhanced statistics retrieved successfully'
+        message: 'Enhanced statistics retrieved successfully',
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get enhanced statistics'
+        error: error instanceof Error ? error.message : 'Failed to get enhanced statistics',
       };
     }
   }
@@ -687,12 +698,12 @@ export class MemoryManager {
       return {
         success: true,
         message: `Successfully configured ${config.provider} embedding provider`,
-        data: this.embeddingManager.getProviderInfo()
+        data: this.embeddingManager.getProviderInfo(),
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to configure embedding provider'
+        error: error instanceof Error ? error.message : 'Failed to configure embedding provider',
       };
     }
   }
@@ -700,14 +711,16 @@ export class MemoryManager {
   /**
    * 语义搜索记忆
    */
-  async semanticSearch(options: SemanticSearchOptions): Promise<VectorApiResponse<VectorSearchResult[]>> {
+  async semanticSearch(
+    options: SemanticSearchOptions
+  ): Promise<VectorApiResponse<VectorSearchResult[]>> {
     try {
       await this.initialize();
 
       if (!this.vectorEnabled) {
         return {
           success: false,
-          error: 'Vector search is not enabled. Please configure an embedding provider first.'
+          error: 'Vector search is not enabled. Please configure an embedding provider first.',
         };
       }
 
@@ -725,7 +738,7 @@ export class MemoryManager {
       if (options.hybridSearch) {
         const keywordResults = await this.readMemories({
           searchText: options.query,
-          limit: Math.ceil(options.limit * 0.5)
+          limit: Math.ceil(options.limit * 0.5),
         });
 
         if (keywordResults.success && keywordResults.data) {
@@ -739,7 +752,7 @@ export class MemoryManager {
           return {
             success: true,
             data: combinedResults.slice(0, options.limit),
-            message: `Found ${combinedResults.length} memories using hybrid search`
+            message: `Found ${combinedResults.length} memories using hybrid search`,
           };
         }
       }
@@ -747,12 +760,12 @@ export class MemoryManager {
       return {
         success: true,
         data: vectorResults,
-        message: `Found ${vectorResults.length} similar memories`
+        message: `Found ${vectorResults.length} similar memories`,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to perform semantic search'
+        error: error instanceof Error ? error.message : 'Failed to perform semantic search',
       };
     }
   }
@@ -760,14 +773,16 @@ export class MemoryManager {
   /**
    * 为现有记忆生成嵌入向量
    */
-  async generateEmbeddingsForExistingMemories(): Promise<VectorApiResponse<{ processed: number; failed: number }>> {
+  async generateEmbeddingsForExistingMemories(): Promise<
+    VectorApiResponse<{ processed: number; failed: number }>
+  > {
     try {
       await this.initialize();
 
       if (!this.vectorEnabled) {
         return {
           success: false,
-          error: 'Vector generation is not enabled. Please configure an embedding provider first.'
+          error: 'Vector generation is not enabled. Please configure an embedding provider first.',
         };
       }
 
@@ -779,7 +794,7 @@ export class MemoryManager {
       if (!allMemoriesResult.success || !allMemoriesResult.data) {
         return {
           success: false,
-          error: 'Failed to retrieve existing memories'
+          error: 'Failed to retrieve existing memories',
         };
       }
 
@@ -806,17 +821,12 @@ export class MemoryManager {
             memory.updatedAt = new Date().toISOString();
 
             // 添加到向量存储
-            await this.vectorStore.addVector(
-              memory.id,
-              embeddingResult.embedding,
-              memory.content,
-              {
-                type: memory.type,
-                conversationId: memory.conversationId,
-                tags: memory.tags,
-                createdAt: memory.createdAt
-              }
-            );
+            await this.vectorStore.addVector(memory.id, embeddingResult.embedding, memory.content, {
+              type: memory.type,
+              conversationId: memory.conversationId,
+              tags: memory.tags,
+              createdAt: memory.createdAt,
+            });
 
             // 更新缓存
             this.cache.set(memory.id, memory);
@@ -830,18 +840,23 @@ export class MemoryManager {
 
         // 保存进度
         await this.vectorStore.save();
-        logger.info(`Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(memories.length / batchSize)}`);
+        logger.info(
+          `Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(memories.length / batchSize)}`
+        );
       }
 
       return {
         success: true,
         data: { processed, failed },
-        message: `Generated embeddings for ${processed} memories, ${failed} failed`
+        message: `Generated embeddings for ${processed} memories, ${failed} failed`,
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to generate embeddings for existing memories'
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to generate embeddings for existing memories',
       };
     }
   }
@@ -854,7 +869,7 @@ export class MemoryManager {
       if (!this.vectorEnabled) {
         return {
           success: false,
-          error: 'Vector functionality is not enabled'
+          error: 'Vector functionality is not enabled',
         };
       }
 
@@ -866,14 +881,14 @@ export class MemoryManager {
         data: {
           ...stats,
           provider: providerInfo?.name,
-          model: providerInfo?.model
+          model: providerInfo?.model,
         },
-        message: 'Vector statistics retrieved successfully'
+        message: 'Vector statistics retrieved successfully',
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to get vector statistics'
+        error: error instanceof Error ? error.message : 'Failed to get vector statistics',
       };
     }
   }
@@ -881,18 +896,21 @@ export class MemoryManager {
   /**
    * 计算两个文本的相似度
    */
-  async calculateSimilarity(text1: string, text2: string): Promise<VectorApiResponse<{ similarity: number }>> {
+  async calculateSimilarity(
+    text1: string,
+    text2: string
+  ): Promise<VectorApiResponse<{ similarity: number }>> {
     try {
       if (!this.vectorEnabled) {
         return {
           success: false,
-          error: 'Vector functionality is not enabled'
+          error: 'Vector functionality is not enabled',
         };
       }
 
       const [embedding1, embedding2] = await Promise.all([
         this.embeddingManager.generateEmbedding(text1),
-        this.embeddingManager.generateEmbedding(text2)
+        this.embeddingManager.generateEmbedding(text2),
       ]);
 
       const similarity = VectorUtils.cosineSimilarity(embedding1.embedding, embedding2.embedding);
@@ -900,12 +918,12 @@ export class MemoryManager {
       return {
         success: true,
         data: { similarity },
-        message: 'Similarity calculated successfully'
+        message: 'Similarity calculated successfully',
       };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to calculate similarity'
+        error: error instanceof Error ? error.message : 'Failed to calculate similarity',
       };
     }
   }
@@ -924,7 +942,7 @@ export class MemoryManager {
     for (const result of vectorResults) {
       combined.set(result.id, {
         ...result,
-        similarity: result.similarity * (1 - keywordWeight)
+        similarity: result.similarity * (1 - keywordWeight),
       });
     }
 
@@ -944,8 +962,8 @@ export class MemoryManager {
             type: memory.type,
             conversationId: memory.conversationId,
             tags: memory.tags,
-            createdAt: memory.createdAt
-          }
+            createdAt: memory.createdAt,
+          },
         });
       }
     }
