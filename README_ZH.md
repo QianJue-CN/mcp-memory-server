@@ -30,7 +30,7 @@
 ### 从 NPM 安装 (推荐)
 
 ```bash
-npm install mcp-memory-server
+npm install @qianjue/mcp-memory-server
 ```
 
 ### 从源码安装
@@ -76,7 +76,7 @@ npm run build
   "mcpServers": {
     "memory-server": {
       "command": "npx",
-      "args": ["mcp-memory-server"],
+      "args": ["@qianjue/mcp-memory-server"],
       "env": {
         "MCP_MEMORY_STORAGE_PATH": "/path/to/your/memory/storage"
       }
@@ -371,7 +371,7 @@ node dist/index.js
   "mcpServers": {
     "memory-server": {
       "command": "npx",
-      "args": ["mcp-memory-server"],
+      "args": ["@qianjue/mcp-memory-server"],
       "env": {
         "MCP_MEMORY_STORAGE_PATH": "~/Documents/AI-Memory",
         "MCP_EMBEDDING_PROVIDER": "gemini",
@@ -452,6 +452,6 @@ src/
 ## 🔗 链接
 
 - [GitHub 仓库](https://github.com/QianJue-CN/mcp-memory-server)
-- [NPM 包](https://www.npmjs.com/package/mcp-memory-server)
+- [NPM 包](https://www.npmjs.com/package/@qianjue/mcp-memory-server)
 - [问题报告](https://github.com/QianJue-CN/mcp-memory-server/issues)
 - [English README](README.md)

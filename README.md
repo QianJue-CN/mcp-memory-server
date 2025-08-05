@@ -30,7 +30,7 @@ An intelligent memory management server based on Model Context Protocol (MCP), p
 ### Install from NPM (Recommended)
 
 ```bash
-npm install mcp-memory-server
+npm install @qianjue/mcp-memory-server
 ```
 
 ### Install from Source
@@ -76,7 +76,7 @@ Add this server to your MCP client configuration file:
   "mcpServers": {
     "memory-server": {
       "command": "npx",
-      "args": ["mcp-memory-server"],
+      "args": ["@qianjue/mcp-memory-server"],
       "env": {
         "MCP_MEMORY_STORAGE_PATH": "/path/to/your/memory/storage"
       }
@@ -396,7 +396,7 @@ Here's a complete example of how to configure the MCP Memory Server in Claude De
   "mcpServers": {
     "memory-server": {
       "command": "npx",
-      "args": ["mcp-memory-server"],
+      "args": ["@qianjue/mcp-memory-server"],
       "env": {
         "MCP_MEMORY_STORAGE_PATH": "~/Documents/AI-Memory",
         "MCP_EMBEDDING_PROVIDER": "gemini",
@@ -477,6 +477,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🔗 Links
 
 - [GitHub Repository](https://github.com/QianJue-CN/mcp-memory-server)
-- [NPM Package](https://www.npmjs.com/package/mcp-memory-server)
+- [NPM Package](https://www.npmjs.com/package/@qianjue/mcp-memory-server)
 - [Issue Tracker](https://github.com/QianJue-CN/mcp-memory-server/issues)
 - [中文文档](README_ZH.md)
