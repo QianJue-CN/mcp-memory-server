@@ -5,7 +5,7 @@ yarn-debug.log*
 yarn-error.log*
 
 # Build output
-dist/
+# dist/ - Keep dist for npm publishing
 build/
 
 # Environment variables
@@ -103,7 +103,7 @@ pnpm-lock.yaml
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+# dist - commented out for npm publishing
 
 # Gatsby files
 .cache/
