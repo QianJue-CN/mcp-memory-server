@@ -87,10 +87,18 @@ npm run build
 
 #### 配置选项
 
+**基础配置**
 - `MCP_MEMORY_STORAGE_PATH`: 自定义存储目录路径
-- `MCP_EMBEDDING_PROVIDER`: 默认嵌入提供商 (ollama/gemini/openai)
-- `MCP_EMBEDDING_API_KEY`: 嵌入提供商的默认API密钥
 - `LOG_LEVEL`: 日志级别 (debug/info/warn/error)
+
+**向量模型配置**
+- `MCP_EMBEDDING_PROVIDER`: 嵌入提供商 (ollama/gemini/openai)
+- `MCP_EMBEDDING_API_KEY`: 嵌入提供商的API密钥
+- `MCP_EMBEDDING_MODEL`: 嵌入模型名称（如未配置则使用默认模型）
+- `MCP_EMBEDDING_BASE_URL`: 嵌入服务基础URL（如未配置则使用默认URL）
+- `MCP_EMBEDDING_DIMENSIONS`: 向量维度（如未配置则使用模型默认维度）
+- `MCP_EMBEDDING_TIMEOUT`: 请求超时时间，单位毫秒（默认：30000）
+- `MCP_EMBEDDING_MAX_RETRIES`: 最大重试次数（默认：3）
 
 ### 基础使用
 
@@ -115,8 +123,8 @@ node dist/index.js
     "name": "configure_embedding",
     "arguments": {
       "provider": "gemini",
-      "apiKey": "your-api-key",
-      "baseUrl": "https://gemini.qianjue.top",
+      "apiKey": "your-gemini-api-key",
+      "baseUrl": "https://generativelanguage.googleapis.com",
       "model": "text-embedding-004"
     }
   }
@@ -251,8 +259,8 @@ node dist/index.js
     "name": "configure_embedding",
     "arguments": {
       "provider": "gemini",
-      "apiKey": "your-api-key",
-      "baseUrl": "https://gemini.qianjue.top",
+      "apiKey": "your-gemini-api-key",
+      "baseUrl": "https://generativelanguage.googleapis.com",
       "model": "text-embedding-004"
     }
   }
@@ -345,8 +353,8 @@ node dist/index.js
 ```json
 {
   "provider": "gemini",
-  "apiKey": "your-api-key",
-  "baseUrl": "https://gemini.qianjue.top",
+  "apiKey": "your-gemini-api-key",
+  "baseUrl": "https://generativelanguage.googleapis.com",
   "model": "text-embedding-004",
   "dimensions": 768
 }
@@ -356,7 +364,7 @@ node dist/index.js
 ```json
 {
   "provider": "openai",
-  "apiKey": "your-api-key",
+  "apiKey": "your-openai-api-key",
   "model": "text-embedding-3-small",
   "dimensions": 1536
 }
@@ -365,6 +373,27 @@ node dist/index.js
 ### 完整配置示例
 
 以下是在 Claude Desktop 中配置 MCP Memory Server 的完整示例：
+
+#### 基础配置（仅记忆功能）
+
+```json
+{
+  "mcpServers": {
+    "memory-server": {
+      "command": "npx",
+      "args": ["@qianjue/mcp-memory-server"],
+      "env": {
+        "MCP_MEMORY_STORAGE_PATH": "~/Documents/AI-Memory",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+```
+
+#### 完整配置（包含向量搜索）
+
+**使用 Gemini 嵌入模型：**
 
 ```json
 {
@@ -376,6 +405,11 @@ node dist/index.js
         "MCP_MEMORY_STORAGE_PATH": "~/Documents/AI-Memory",
         "MCP_EMBEDDING_PROVIDER": "gemini",
         "MCP_EMBEDDING_API_KEY": "your-gemini-api-key",
+        "MCP_EMBEDDING_MODEL": "text-embedding-004",
+        "MCP_EMBEDDING_BASE_URL": "https://generativelanguage.googleapis.com",
+        "MCP_EMBEDDING_DIMENSIONS": "768",
+        "MCP_EMBEDDING_TIMEOUT": "30000",
+        "MCP_EMBEDDING_MAX_RETRIES": "3",
         "LOG_LEVEL": "info"
       }
     }
@@ -383,11 +417,74 @@ node dist/index.js
 }
 ```
 
-添加此配置后：
+**使用 OpenAI 嵌入模型：**
+
+```json
+{
+  "mcpServers": {
+    "memory-server": {
+      "command": "npx",
+      "args": ["@qianjue/mcp-memory-server"],
+      "env": {
+        "MCP_MEMORY_STORAGE_PATH": "~/Documents/AI-Memory",
+        "MCP_EMBEDDING_PROVIDER": "openai",
+        "MCP_EMBEDDING_API_KEY": "your-openai-api-key",
+        "MCP_EMBEDDING_MODEL": "text-embedding-3-small",
+        "MCP_EMBEDDING_BASE_URL": "https://api.openai.com",
+        "MCP_EMBEDDING_DIMENSIONS": "1536",
+        "MCP_EMBEDDING_TIMEOUT": "30000",
+        "MCP_EMBEDDING_MAX_RETRIES": "3",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+```
+
+**使用 Ollama 本地模型：**
+
+```json
+{
+  "mcpServers": {
+    "memory-server": {
+      "command": "npx",
+      "args": ["@qianjue/mcp-memory-server"],
+      "env": {
+        "MCP_MEMORY_STORAGE_PATH": "~/Documents/AI-Memory",
+        "MCP_EMBEDDING_PROVIDER": "ollama",
+        "MCP_EMBEDDING_MODEL": "nomic-embed-text",
+        "MCP_EMBEDDING_BASE_URL": "http://localhost:11434",
+        "MCP_EMBEDDING_DIMENSIONS": "768",
+        "MCP_EMBEDDING_TIMEOUT": "30000",
+        "MCP_EMBEDDING_MAX_RETRIES": "3",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}
+```
+
+#### 默认值说明
+
+如果未配置相应的环境变量，系统将使用以下默认值：
+
+| 提供商     | 默认模型                 | 默认URL                                     | 默认维度 |
+| ---------- | ------------------------ | ------------------------------------------- | -------- |
+| **Gemini** | `embedding-001`          | `https://generativelanguage.googleapis.com` | 768      |
+| **OpenAI** | `text-embedding-3-small` | `https://api.openai.com`                    | 1536     |
+| **Ollama** | `nomic-embed-text`       | `http://localhost:11434`                    | 768      |
+
+- **超时时间**：默认 30000 毫秒（30秒）
+- **最大重试次数**：默认 3 次
+
+#### 配置后的效果
+
+添加配置后：
 1. 重启 Claude Desktop
 2. 记忆服务器将提供所有11个工具
-3. 如果提供了API密钥，向量搜索将自动启用
+3. 如果配置了向量模型环境变量，向量搜索将自动启用
 4. 记忆将存储在指定目录中
+5. 无需手动调用 `configure_embedding` 工具
 
 ## 📊 数据结构
 

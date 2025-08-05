@@ -115,8 +115,8 @@ node dist/index.js
     "name": "configure_embedding",
     "arguments": {
       "provider": "gemini",
-      "apiKey": "your-api-key",
-      "baseUrl": "https://gemini.qianjue.top",
+      "apiKey": "your-gemini-api-key",
+      "baseUrl": "https://generativelanguage.googleapis.com",
       "model": "text-embedding-004"
     }
   }
@@ -266,8 +266,8 @@ Configure embedding model provider
     "name": "configure_embedding",
     "arguments": {
       "provider": "gemini",
-      "apiKey": "your-api-key",
-      "baseUrl": "https://gemini.qianjue.top",
+      "apiKey": "your-gemini-api-key",
+      "baseUrl": "https://generativelanguage.googleapis.com",
       "model": "text-embedding-004"
     }
   }
@@ -360,8 +360,8 @@ Get vector storage statistics
 ```json
 {
   "provider": "gemini",
-  "apiKey": "your-api-key",
-  "baseUrl": "https://gemini.qianjue.top",
+  "apiKey": "your-gemini-api-key",
+  "baseUrl": "https://generativelanguage.googleapis.com",
   "model": "text-embedding-004",
   "dimensions": 768
 }
@@ -371,7 +371,7 @@ Get vector storage statistics
 ```json
 {
   "provider": "openai",
-  "apiKey": "your-api-key",
+  "apiKey": "your-openai-api-key",
   "model": "text-embedding-3-small",
   "dimensions": 1536
 }
@@ -384,7 +384,7 @@ MCP_MEMORY_STORAGE_PATH=/path/to/storage
 
 # Optional: Set embedding configuration
 MCP_EMBEDDING_PROVIDER=gemini
-MCP_EMBEDDING_API_KEY=your-api-key
+MCP_EMBEDDING_API_KEY=your-gemini-api-key
 ```
 
 ### Complete Configuration Example

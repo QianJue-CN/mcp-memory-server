@@ -240,6 +240,7 @@ export class EmbeddingManager {
       case 'gemini':
         return {
           ...baseTemplate,
+          baseUrl: 'https://generativelanguage.googleapis.com',
           model: 'embedding-001',
           apiKey: 'your-gemini-api-key',
           dimensions: 768
@@ -248,6 +249,7 @@ export class EmbeddingManager {
       case 'openai':
         return {
           ...baseTemplate,
+          baseUrl: 'https://api.openai.com',
           model: 'text-embedding-3-small',
           apiKey: 'your-openai-api-key',
           dimensions: 1536
