@@ -7,6 +7,7 @@
 ### 核心功能
 - **CRUD 操作**：创建、读取、更新、删除记忆条目
 - **多种记忆类型**：支持全局记忆、对话记忆和临时记忆
+- **文件夹管理**:创建、删除、重命名文件夹,组织和分类记忆
 - **灵活存储**：用户可自定义存储路径
 - **JSON 格式**：使用 JSON 格式存储，便于读取和备份
 
@@ -334,6 +335,144 @@ node dist/index.js
   }
 }
 ```
+
+### 文件夹管理工具
+
+#### 1. create_folder
+创建新的记忆文件夹
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "create_folder",
+    "arguments": {
+      "folderPath": "工作/项目A",
+      "description": "项目A相关的记忆"
+    }
+  }
+}
+```
+
+**参数说明:**
+- `folderPath`: 文件夹路径,支持多级路径(如 "工作/项目A/文档")
+- `description`: 可选的文件夹描述
+
+**使用场景:**
+- 组织不同项目的记忆
+- 按主题分类记忆
+- 创建层级化的记忆结构
+
+#### 2. delete_folder
+删除文件夹
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "delete_folder",
+    "arguments": {
+      "folderPath": "工作/项目A",
+      "deleteMemories": false
+    }
+  }
+}
+```
+
+**参数说明:**
+- `folderPath`: 要删除的文件夹路径
+- `deleteMemories`: 是否同时删除文件夹内的所有记忆(默认: false)
+  - `true`: 删除文件夹及其所有记忆
+  - `false`: 只删除文件夹,记忆保留但移除文件夹标注
+
+**注意事项:**
+- 删除文件夹前请确认是否需要保留记忆
+- 设置 `deleteMemories: true` 将永久删除文件夹内的所有记忆
+
+#### 3. rename_folder
+重命名文件夹
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "rename_folder",
+    "arguments": {
+      "oldPath": "工作/项目A",
+      "newPath": "工作/项目Alpha"
+    }
+  }
+}
+```
+
+**参数说明:**
+- `oldPath`: 当前文件夹路径
+- `newPath`: 新的文件夹路径
+
+**功能特性:**
+- 自动更新文件夹内所有记忆的元数据
+- 确保重命名操作的原子性
+- 防止数据不一致
+
+**重要提示:**
+重命名文件夹时,系统会自动同步更新该文件夹内所有记忆的 `metadata.folderPath` 字段,确保记忆与文件夹的关联关系正确。
+
+#### 4. list_folders
+列出所有文件夹
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "list_folders",
+    "arguments": {}
+  }
+}
+```
+
+**返回信息:**
+- 文件夹路径
+- 文件夹名称
+- 创建时间
+- 包含的记忆数量
+- 父文件夹路径
+
+### 在记忆中使用文件夹
+
+创建记忆时,可以通过 `metadata.folderPath` 字段指定文件夹:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "create_memory",
+    "arguments": {
+      "content": "项目A的需求文档已完成",
+      "type": "conversation",
+      "tags": ["项目", "文档"],
+      "metadata": {
+        "folderPath": "工作/项目A",
+        "priority": "high"
+      }
+    }
+  }
+}
+```
+
+**注意事项:**
+- 全局记忆(type: "global")不需要文件夹标注
+- 文件夹路径会自动存储在记忆的 `metadata.folderPath` 字段中
+- 重命名文件夹时,所有相关记忆的文件夹路径会自动更新
 
 ## 🔧 配置
 

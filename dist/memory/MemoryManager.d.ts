@@ -1,4 +1,4 @@
-import { MemoryEntry, CreateMemoryInput, UpdateMemoryInput, MemoryFilter, ApiResponse, MemoryStats } from '../types/memory.js';
+import { MemoryEntry, CreateMemoryInput, UpdateMemoryInput, MemoryFilter, ApiResponse, MemoryStats, CreateFolderInput, RenameFolderInput, DeleteFolderInput, FolderInfo, FolderListResponse } from '../types/memory.js';
 import { VectorSearchResult, VectorStats, SemanticSearchOptions, VectorApiResponse } from '../types/vector.js';
 import { PerformanceMetrics, SystemMetrics } from '../utils/PerformanceMonitor.js';
 export declare class MemoryManager {
@@ -126,5 +126,39 @@ export declare class MemoryManager {
      * 获取嵌入提供商信息
      */
     getEmbeddingProviderInfo(): any;
+    /**
+     * 创建文件夹
+     */
+    createFolder(input: CreateFolderInput): Promise<ApiResponse<FolderInfo>>;
+    /**
+     * 删除文件夹
+     */
+    deleteFolder(input: DeleteFolderInput): Promise<ApiResponse<{
+        deletedMemories: number;
+    }>>;
+    /**
+     * 重命名文件夹
+     */
+    renameFolder(input: RenameFolderInput): Promise<ApiResponse<FolderInfo>>;
+    /**
+     * 列出所有文件夹
+     */
+    listFolders(): Promise<ApiResponse<FolderListResponse>>;
+    /**
+     * 获取文件夹中的所有记忆
+     */
+    private getMemoriesInFolder;
+    /**
+     * 保存文件夹信息
+     */
+    private saveFolderInfo;
+    /**
+     * 删除文件夹信息
+     */
+    private removeFolderInfo;
+    /**
+     * 获取父文件夹路径
+     */
+    private getParentPath;
 }
 //# sourceMappingURL=MemoryManager.d.ts.map

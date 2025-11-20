@@ -7,6 +7,7 @@ An intelligent memory management server based on Model Context Protocol (MCP), p
 ### Core Functionality
 - **CRUD Operations**: Create, read, update, and delete memory entries
 - **Multiple Memory Types**: Support for global, conversation, and temporary memories
+- **Folder Management**: Create, delete, and rename folders to organize and categorize memories
 - **Flexible Storage**: User-customizable storage paths
 - **JSON Format**: JSON-based storage for easy reading and backup
 
@@ -341,6 +342,144 @@ Get vector storage statistics
   }
 }
 ```
+
+### Folder Management Tools
+
+#### 1. create_folder
+Create a new memory folder
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "create_folder",
+    "arguments": {
+      "folderPath": "Work/ProjectA",
+      "description": "Memories related to Project A"
+    }
+  }
+}
+```
+
+**Parameters:**
+- `folderPath`: Folder path, supports multi-level paths (e.g., "Work/ProjectA/Documents")
+- `description`: Optional folder description
+
+**Use Cases:**
+- Organize memories for different projects
+- Categorize memories by topic
+- Create hierarchical memory structures
+
+#### 2. delete_folder
+Delete a folder
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "delete_folder",
+    "arguments": {
+      "folderPath": "Work/ProjectA",
+      "deleteMemories": false
+    }
+  }
+}
+```
+
+**Parameters:**
+- `folderPath`: Path of the folder to delete
+- `deleteMemories`: Whether to delete all memories in the folder (default: false)
+  - `true`: Delete folder and all its memories
+  - `false`: Only delete folder, memories are retained but folder tags are removed
+
+**Important Notes:**
+- Confirm whether you need to keep memories before deleting a folder
+- Setting `deleteMemories: true` will permanently delete all memories in the folder
+
+#### 3. rename_folder
+Rename a folder
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 3,
+  "method": "tools/call",
+  "params": {
+    "name": "rename_folder",
+    "arguments": {
+      "oldPath": "Work/ProjectA",
+      "newPath": "Work/ProjectAlpha"
+    }
+  }
+}
+```
+
+**Parameters:**
+- `oldPath`: Current folder path
+- `newPath`: New folder path
+
+**Features:**
+- Automatically updates metadata for all memories in the folder
+- Ensures atomicity of rename operations
+- Prevents data inconsistency
+
+**Important:**
+When renaming a folder, the system automatically synchronizes and updates the `metadata.folderPath` field for all memories in the folder, ensuring the correct association between memories and folders.
+
+#### 4. list_folders
+List all folders
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "tools/call",
+  "params": {
+    "name": "list_folders",
+    "arguments": {}
+  }
+}
+```
+
+**Returns:**
+- Folder path
+- Folder name
+- Creation time
+- Number of memories contained
+- Parent folder path
+
+### Using Folders with Memories
+
+When creating a memory, you can specify a folder using the `metadata.folderPath` field:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "create_memory",
+    "arguments": {
+      "content": "Project A requirements document completed",
+      "type": "conversation",
+      "tags": ["project", "documentation"],
+      "metadata": {
+        "folderPath": "Work/ProjectA",
+        "priority": "high"
+      }
+    }
+  }
+}
+```
+
+**Notes:**
+- Global memories (type: "global") do not need folder tags
+- Folder paths are automatically stored in the memory's `metadata.folderPath` field
+- When renaming a folder, all related memories' folder paths are automatically updated
 
 ## 🔧 Configuration
 

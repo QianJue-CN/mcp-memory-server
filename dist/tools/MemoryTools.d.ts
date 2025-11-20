@@ -71,5 +71,21 @@ export declare class MemoryTools {
      * 获取向量统计信息工具实现
      */
     private getVectorStats;
+    /**
+     * 创建文件夹工具实现
+     */
+    private createFolder;
+    /**
+     * 删除文件夹工具实现
+     */
+    private deleteFolder;
+    /**
+     * 重命名文件夹工具实现
+     */
+    private renameFolder;
+    /**
+     * 列出文件夹工具实现
+     */
+    private listFolders;
 }
 //# sourceMappingURL=MemoryTools.d.ts.map

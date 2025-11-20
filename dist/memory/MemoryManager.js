@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { MemoryType, CreateMemoryInputSchema, UpdateMemoryInputSchema, MemoryFilterSchema, MemoryEntrySchema, } from '../types/memory.js';
+import { MemoryType, CreateMemoryInputSchema, UpdateMemoryInputSchema, MemoryFilterSchema, MemoryEntrySchema, CreateFolderInputSchema, RenameFolderInputSchema, DeleteFolderInputSchema, } from '../types/memory.js';
 import { FileManager } from '../utils/FileManager.js';
 import { MemoryCache } from '../utils/MemoryCache.js';
 import { MemoryIndex } from '../utils/MemoryIndex.js';
@@ -125,6 +125,16 @@ export class MemoryManager {
                 tags: validatedInput.tags || [],
                 metadata: validatedInput.metadata || {},
             };
+            // 如果不是全局记忆,且 metadata 中包含 folderPath,则标注文件夹
+            // 全局记忆不需要文件夹标注
+            if (memory.type !== MemoryType.GLOBAL &&
+                memory.metadata?.folderPath &&
+                typeof memory.metadata.folderPath === 'string') {
+                logger.debug('Memory assigned to folder', {
+                    memoryId: memory.id,
+                    folderPath: memory.metadata.folderPath,
+                });
+            }
             // 验证记忆条目
             MemoryEntrySchema.parse(memory);
             // 生成嵌入向量（如果启用）
@@ -789,6 +799,300 @@ export class MemoryManager {
      */
     getEmbeddingProviderInfo() {
         return this.embeddingManager.getProviderInfo();
+    }
+    // ==================== 文件夹管理方法 ====================
+    /**
+     * 创建文件夹
+     */
+    async createFolder(input) {
+        const timer = performanceMonitor.startTimer('create_folder');
+        try {
+            await this.initialize();
+            // 验证输入
+            const validatedInput = CreateFolderInputSchema.parse(input);
+            logger.debug('Creating folder', { folderPath: validatedInput.folderPath });
+            // 检查文件夹是否已存在
+            const existingFolders = await this.listFolders();
+            if (existingFolders.success && existingFolders.data) {
+                const folderExists = existingFolders.data.folders.some((f) => f.path === validatedInput.folderPath);
+                if (folderExists) {
+                    return {
+                        success: false,
+                        error: `Folder '${validatedInput.folderPath}' already exists`,
+                    };
+                }
+            }
+            // 创建文件夹信息
+            const folderInfo = {
+                path: validatedInput.folderPath,
+                name: validatedInput.folderPath.split('/').pop() || validatedInput.folderPath,
+                createdAt: new Date().toISOString(),
+                memoryCount: 0,
+                parentPath: this.getParentPath(validatedInput.folderPath),
+            };
+            // 保存文件夹信息到索引文件
+            await this.saveFolderInfo(folderInfo);
+            logger.info('Folder created successfully', { folderPath: validatedInput.folderPath });
+            return {
+                success: true,
+                data: folderInfo,
+                message: `Folder '${validatedInput.folderPath}' created successfully`,
+            };
+        }
+        catch (error) {
+            logger.error('Failed to create folder', error, { input });
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to create folder',
+            };
+        }
+        finally {
+            timer();
+        }
+    }
+    /**
+     * 删除文件夹
+     */
+    async deleteFolder(input) {
+        const timer = performanceMonitor.startTimer('delete_folder');
+        try {
+            await this.initialize();
+            // 验证输入
+            const validatedInput = DeleteFolderInputSchema.parse(input);
+            logger.debug('Deleting folder', {
+                folderPath: validatedInput.folderPath,
+                deleteMemories: validatedInput.deleteMemories,
+            });
+            // 查找文件夹中的所有记忆
+            const memoriesInFolder = await this.getMemoriesInFolder(validatedInput.folderPath);
+            let deletedMemories = 0;
+            if (validatedInput.deleteMemories) {
+                // 删除文件夹内的所有记忆
+                for (const memory of memoriesInFolder) {
+                    const deleteResult = await this.deleteMemory(memory.id);
+                    if (deleteResult.success) {
+                        deletedMemories++;
+                    }
+                }
+            }
+            else {
+                // 只移除文件夹标注,不删除记忆
+                for (const memory of memoriesInFolder) {
+                    if (memory.metadata?.folderPath === validatedInput.folderPath) {
+                        const updatedMetadata = { ...memory.metadata };
+                        delete updatedMetadata.folderPath;
+                        await this.updateMemory(memory.id, {
+                            metadata: updatedMetadata,
+                        });
+                    }
+                }
+            }
+            // 从文件夹索引中删除
+            await this.removeFolderInfo(validatedInput.folderPath);
+            logger.info('Folder deleted successfully', {
+                folderPath: validatedInput.folderPath,
+                deletedMemories,
+            });
+            return {
+                success: true,
+                data: { deletedMemories },
+                message: `Folder '${validatedInput.folderPath}' deleted successfully. ${deletedMemories} memories ${validatedInput.deleteMemories ? 'deleted' : 'untagged'}.`,
+            };
+        }
+        catch (error) {
+            logger.error('Failed to delete folder', error, { input });
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to delete folder',
+            };
+        }
+        finally {
+            timer();
+        }
+    }
+    /**
+     * 重命名文件夹
+     */
+    async renameFolder(input) {
+        const timer = performanceMonitor.startTimer('rename_folder');
+        try {
+            await this.initialize();
+            // 验证输入
+            const validatedInput = RenameFolderInputSchema.parse(input);
+            logger.debug('Renaming folder', {
+                oldPath: validatedInput.oldPath,
+                newPath: validatedInput.newPath,
+            });
+            // 检查旧文件夹是否存在
+            const existingFolders = await this.listFolders();
+            if (!existingFolders.success || !existingFolders.data) {
+                return {
+                    success: false,
+                    error: 'Failed to retrieve folder list',
+                };
+            }
+            const oldFolder = existingFolders.data.folders.find((f) => f.path === validatedInput.oldPath);
+            if (!oldFolder) {
+                return {
+                    success: false,
+                    error: `Folder '${validatedInput.oldPath}' not found`,
+                };
+            }
+            // 检查新文件夹名是否已存在
+            const newFolderExists = existingFolders.data.folders.some((f) => f.path === validatedInput.newPath);
+            if (newFolderExists) {
+                return {
+                    success: false,
+                    error: `Folder '${validatedInput.newPath}' already exists`,
+                };
+            }
+            // 更新文件夹中所有记忆的 folder 元数据
+            const memoriesInFolder = await this.getMemoriesInFolder(validatedInput.oldPath);
+            for (const memory of memoriesInFolder) {
+                const metadata = memory.metadata || {};
+                if (metadata.folder === validatedInput.oldPath ||
+                    metadata.folderPath === validatedInput.oldPath) {
+                    const updatedMetadata = {
+                        ...metadata,
+                        folder: validatedInput.newPath,
+                        folderPath: validatedInput.newPath,
+                    };
+                    await this.updateMemory(memory.id, {
+                        metadata: updatedMetadata,
+                    });
+                }
+            }
+            // 更新文件夹信息
+            const updatedFolderInfo = {
+                ...oldFolder,
+                path: validatedInput.newPath,
+                name: validatedInput.newPath.split('/').pop() || validatedInput.newPath,
+                parentPath: this.getParentPath(validatedInput.newPath),
+            };
+            // 删除旧文件夹信息并保存新的
+            await this.removeFolderInfo(validatedInput.oldPath);
+            await this.saveFolderInfo(updatedFolderInfo);
+            logger.info('Folder renamed successfully', {
+                oldPath: validatedInput.oldPath,
+                newPath: validatedInput.newPath,
+                updatedMemories: memoriesInFolder.length,
+            });
+            return {
+                success: true,
+                data: updatedFolderInfo,
+                message: `Folder renamed from '${validatedInput.oldPath}' to '${validatedInput.newPath}'. ${memoriesInFolder.length} memories updated.`,
+            };
+        }
+        catch (error) {
+            logger.error('Failed to rename folder', error, { input });
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to rename folder',
+            };
+        }
+        finally {
+            timer();
+        }
+    }
+    /**
+     * 列出所有文件夹
+     */
+    async listFolders() {
+        try {
+            await this.initialize();
+            const foldersFilePath = path.join(this.config.storagePath, 'folders.json');
+            let folders = [];
+            try {
+                const data = await this.fileManager.readJsonFile(foldersFilePath);
+                folders = data;
+            }
+            catch (error) {
+                // 文件不存在或读取失败,返回空列表
+                folders = [];
+            }
+            // 更新每个文件夹的记忆数量
+            for (const folder of folders) {
+                const memories = await this.getMemoriesInFolder(folder.path);
+                folder.memoryCount = memories.length;
+            }
+            return {
+                success: true,
+                data: {
+                    folders,
+                    totalFolders: folders.length,
+                },
+                message: `Found ${folders.length} folders`,
+            };
+        }
+        catch (error) {
+            return {
+                success: false,
+                error: error instanceof Error ? error.message : 'Failed to list folders',
+            };
+        }
+    }
+    /**
+     * 获取文件夹中的所有记忆
+     */
+    async getMemoriesInFolder(folderPath) {
+        const allMemoriesResult = await this.readMemories({ limit: 10000 });
+        if (!allMemoriesResult.success || !allMemoriesResult.data) {
+            return [];
+        }
+        return allMemoriesResult.data.filter((memory) => {
+            const metadata = memory.metadata || {};
+            return metadata.folder === folderPath || metadata.folderPath === folderPath;
+        });
+    }
+    /**
+     * 保存文件夹信息
+     */
+    async saveFolderInfo(folderInfo) {
+        const foldersFilePath = path.join(this.config.storagePath, 'folders.json');
+        let folders = [];
+        try {
+            folders = await this.fileManager.readJsonFile(foldersFilePath);
+        }
+        catch (error) {
+            // 文件不存在,创建新的
+            folders = [];
+        }
+        // 添加或更新文件夹信息
+        const existingIndex = folders.findIndex((f) => f.path === folderInfo.path);
+        if (existingIndex >= 0) {
+            folders[existingIndex] = folderInfo;
+        }
+        else {
+            folders.push(folderInfo);
+        }
+        await this.fileManager.writeJsonFile(foldersFilePath, folders);
+    }
+    /**
+     * 删除文件夹信息
+     */
+    async removeFolderInfo(folderPath) {
+        const foldersFilePath = path.join(this.config.storagePath, 'folders.json');
+        let folders = [];
+        try {
+            folders = await this.fileManager.readJsonFile(foldersFilePath);
+        }
+        catch (error) {
+            // 文件不存在,无需删除
+            return;
+        }
+        // 过滤掉要删除的文件夹
+        folders = folders.filter((f) => f.path !== folderPath);
+        await this.fileManager.writeJsonFile(foldersFilePath, folders);
+    }
+    /**
+     * 获取父文件夹路径
+     */
+    getParentPath(folderPath) {
+        const parts = folderPath.split('/');
+        if (parts.length <= 1) {
+            return undefined;
+        }
+        return parts.slice(0, -1).join('/');
     }
 }
 //# sourceMappingURL=MemoryManager.js.map

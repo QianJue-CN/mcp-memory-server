@@ -126,4 +126,48 @@ export interface MemoryStats {
     temporaryMemories: number;
     storageSize: number;
 }
+export interface FolderInfo {
+    path: string;
+    name: string;
+    createdAt: string;
+    memoryCount: number;
+    parentPath?: string;
+}
+export declare const CreateFolderInputSchema: z.ZodObject<{
+    folderPath: z.ZodString;
+    description: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    folderPath: string;
+    description?: string | undefined;
+}, {
+    folderPath: string;
+    description?: string | undefined;
+}>;
+export type CreateFolderInput = z.infer<typeof CreateFolderInputSchema>;
+export declare const RenameFolderInputSchema: z.ZodObject<{
+    oldPath: z.ZodString;
+    newPath: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    oldPath: string;
+    newPath: string;
+}, {
+    oldPath: string;
+    newPath: string;
+}>;
+export type RenameFolderInput = z.infer<typeof RenameFolderInputSchema>;
+export declare const DeleteFolderInputSchema: z.ZodObject<{
+    folderPath: z.ZodString;
+    deleteMemories: z.ZodDefault<z.ZodBoolean>;
+}, "strip", z.ZodTypeAny, {
+    folderPath: string;
+    deleteMemories: boolean;
+}, {
+    folderPath: string;
+    deleteMemories?: boolean | undefined;
+}>;
+export type DeleteFolderInput = z.infer<typeof DeleteFolderInputSchema>;
+export interface FolderListResponse {
+    folders: FolderInfo[];
+    totalFolders: number;
+}
 //# sourceMappingURL=memory.d.ts.map

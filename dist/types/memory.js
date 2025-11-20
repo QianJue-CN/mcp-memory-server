@@ -53,4 +53,19 @@ export const StorageConfigSchema = z.object({
         .default(10 * 1024 * 1024), // 10MB
     backupEnabled: z.boolean().default(true),
 });
+// 创建文件夹的输入模式
+export const CreateFolderInputSchema = z.object({
+    folderPath: z.string().min(1),
+    description: z.string().optional(),
+});
+// 重命名文件夹的输入模式
+export const RenameFolderInputSchema = z.object({
+    oldPath: z.string().min(1),
+    newPath: z.string().min(1),
+});
+// 删除文件夹的输入模式
+export const DeleteFolderInputSchema = z.object({
+    folderPath: z.string().min(1),
+    deleteMemories: z.boolean().default(false), // 是否删除文件夹内的记忆
+});
 //# sourceMappingURL=memory.js.map

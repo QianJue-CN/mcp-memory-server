@@ -1,6 +1,14 @@
 import { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { MemoryManager } from '../memory/MemoryManager.js';
-import { MemoryType, CreateMemoryInput, UpdateMemoryInput, MemoryFilter } from '../types/memory.js';
+import {
+  MemoryType,
+  CreateMemoryInput,
+  UpdateMemoryInput,
+  MemoryFilter,
+  CreateFolderInput,
+  RenameFolderInput,
+  DeleteFolderInput,
+} from '../types/memory.js';
 
 export class MemoryTools {
   private memoryManager: MemoryManager;
@@ -397,6 +405,69 @@ export class MemoryTools {
           properties: {},
         },
       },
+      {
+        name: 'create_folder',
+        description: 'Create a new folder for organizing memories',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            folderPath: {
+              type: 'string',
+              description: 'The path of the folder to create (e.g., "Work/ProjectA" or "Personal/Study")',
+            },
+            description: {
+              type: 'string',
+              description: 'Optional description of the folder',
+            },
+          },
+          required: ['folderPath'],
+        },
+      },
+      {
+        name: 'delete_folder',
+        description: 'Delete a folder and optionally its memories',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            folderPath: {
+              type: 'string',
+              description: 'The path of the folder to delete',
+            },
+            deleteMemories: {
+              type: 'boolean',
+              description: 'Whether to delete all memories in the folder (default: false)',
+              default: false,
+            },
+          },
+          required: ['folderPath'],
+        },
+      },
+      {
+        name: 'rename_folder',
+        description: 'Rename a folder and update all memories within it',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            oldPath: {
+              type: 'string',
+              description: 'The current path of the folder',
+            },
+            newPath: {
+              type: 'string',
+              description: 'The new path for the folder',
+            },
+          },
+          required: ['oldPath', 'newPath'],
+        },
+      },
+      {
+        name: 'list_folders',
+        description: 'List all folders with their information',
+        inputSchema: {
+          type: 'object',
+          properties: {},
+        },
+      },
     ];
   }
 
@@ -449,6 +520,18 @@ export class MemoryTools {
 
       case 'get_vector_stats':
         return this.getVectorStats();
+
+      case 'create_folder':
+        return this.createFolder(args);
+
+      case 'delete_folder':
+        return this.deleteFolder(args);
+
+      case 'rename_folder':
+        return this.renameFolder(args);
+
+      case 'list_folders':
+        return this.listFolders();
 
       default:
         throw new Error(`Unknown tool: ${name}`);
@@ -791,6 +874,79 @@ export class MemoryTools {
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Failed to get vector statistics',
+      };
+    }
+  }
+
+  // ==================== 文件夹管理工具实现 ====================
+
+  /**
+   * 创建文件夹工具实现
+   */
+  private async createFolder(args: any) {
+    try {
+      const input: CreateFolderInput = {
+        folderPath: args.folderPath,
+        description: args.description,
+      };
+
+      return await this.memoryManager.createFolder(input);
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to create folder',
+      };
+    }
+  }
+
+  /**
+   * 删除文件夹工具实现
+   */
+  private async deleteFolder(args: any) {
+    try {
+      const input: DeleteFolderInput = {
+        folderPath: args.folderPath,
+        deleteMemories: args.deleteMemories ?? false,
+      };
+
+      return await this.memoryManager.deleteFolder(input);
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to delete folder',
+      };
+    }
+  }
+
+  /**
+   * 重命名文件夹工具实现
+   */
+  private async renameFolder(args: any) {
+    try {
+      const input: RenameFolderInput = {
+        oldPath: args.oldPath,
+        newPath: args.newPath,
+      };
+
+      return await this.memoryManager.renameFolder(input);
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to rename folder',
+      };
+    }
+  }
+
+  /**
+   * 列出文件夹工具实现
+   */
+  private async listFolders() {
+    try {
+      return await this.memoryManager.listFolders();
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to list folders',
       };
     }
   }
