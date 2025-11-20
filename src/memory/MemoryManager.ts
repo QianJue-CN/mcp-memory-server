@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs/promises';
 import {
   MemoryEntry,
   MemoryType,
@@ -607,6 +608,12 @@ export class MemoryManager {
    * 获取记忆文件路径
    */
   private getMemoryFilePath(memory: MemoryEntry): string {
+    // 如果记忆有文件夹路径，则在文件夹内创建记忆文件
+    if (memory.metadata?.folderPath) {
+      const folderPath = memory.metadata.folderPath as string;
+      return path.join(this.config.storagePath, folderPath, 'memories.json');
+    }
+
     if (memory.type === MemoryType.GLOBAL) {
       return this.fileManager.getGlobalMemoryFilePath();
     } else if (memory.conversationId) {
@@ -1036,6 +1043,10 @@ export class MemoryManager {
           };
         }
       }
+
+      // 创建物理文件夹目录
+      const folderPath = path.join(this.config.storagePath, validatedInput.folderPath);
+      await fs.mkdir(folderPath, { recursive: true });
 
       // 创建文件夹信息
       const folderInfo: FolderInfo = {
